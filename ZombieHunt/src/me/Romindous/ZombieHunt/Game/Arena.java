@@ -37,8 +37,7 @@ import me.Romindous.ZombieHunt.Commands.KitsCmd;
 import me.Romindous.ZombieHunt.Listeners.MainLis;
 import me.Romindous.ZombieHunt.Messages.TitleManager;
 import ru.komiss77.ApiOstrov;
-import ru.komiss77.Enums.UniversalArenaState;
-import ru.komiss77.Managers.PM;
+import ru.komiss77.modules.player.PM;
 
 import static org.bukkit.ChatColor.GRAY;
 import static org.bukkit.ChatColor.GOLD;
@@ -148,7 +147,7 @@ public class Arena {
 			for (Player pl : Bukkit.getOnlinePlayers()) {
 				pl.setPlayerListFooter(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!");
 			}
-			ApiOstrov.sendArenaData(this.name, "§7[§6Инфекция§7]", " ", "§2Ожидание", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "§6Инфекция", pls.size(), UniversalArenaState.ОЖИДАНИЕ, false, false);
+			ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули карту " + GOLD + getName());
 			for (String s : pls) {
 				TitleManager.sendActionBar(Bukkit.getPlayer(s), amtToHB());
@@ -163,7 +162,7 @@ public class Arena {
 			for (Player pl : Bukkit.getOnlinePlayers()) {
 				pl.setPlayerListFooter(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!");
 			}
-			ApiOstrov.sendArenaData(this.name, "§7[§6Инфекция§7]", " ", "§6Скоро старт!", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "§6Инфекция", pls.size(), UniversalArenaState.СТАРТ, false, false);
+			ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, "§7[§6Инфекция§7]", "§6Скоро старт!", " ", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "", pls.size());
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули карту " + GOLD + getName());
 			for (final String s : pls) {
 				TitleManager.sendActionBar(Bukkit.getPlayer(s), amtToHB());
@@ -180,7 +179,7 @@ public class Arena {
 					Bukkit.getPlayer(s).sendMessage(Main.pref() + "На карте недостаточно игроков для начала!");
 					waitScore(s);
 				}
-				ApiOstrov.sendArenaData(this.name, "§7[§6Инфекция§7]", " ", "§2Ожидание", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "§6Инфекция", pls.size(), UniversalArenaState.ОЖИДАНИЕ, false, false);
+				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
 			} else {
 				for (final String s : pls) {
 					Main.chgSbdTm(Bukkit.getPlayer(s).getScoreboard(), "onwt", "", GOLD + (min - pls.size() > 1 ? 
@@ -188,7 +187,7 @@ public class Arena {
 							:
 							"" + (min - pls.size()) + GRAY + " игрока"));
 				}
-				ApiOstrov.sendArenaData(this.name, "§7[§6Инфекция§7]", " ", "§6Скоро старт!", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "§6Инфекция", pls.size(), UniversalArenaState.СТАРТ, false, false);
+				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, "§7[§6Инфекция§7]", "§6Скоро старт!", " ", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "", pls.size());
 			}
 			break;
 		case BEGINING:
@@ -211,9 +210,9 @@ public class Arena {
 					Bukkit.getPlayer(s).teleport(Main.lobby);
 					waitScore(s);
 				}
-				ApiOstrov.sendArenaData(this.name, "§7[§6Инфекция§7]", " ", "§2Ожидание", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "§6Инфекция", pls.size(), UniversalArenaState.ОЖИДАНИЕ, false, false);
+				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
 			} else {
-				ApiOstrov.sendArenaData(this.name, "§7[§6Инфекция§7]", " ", "§6Скоро старт!", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "§6Инфекция", pls.size(), UniversalArenaState.СТАРТ, false, false);
+				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, "§7[§6Инфекция§7]", "§6Скоро старт!", " ", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "", pls.size());
 				for (final String s : pls) {
 					Main.chgSbdTm(Bukkit.getPlayer(s).getScoreboard(), "plamt", "", "" + GOLD + getPlAmount() + GRAY + "/" + GOLD + max);
 				}
@@ -286,10 +285,10 @@ public class Arena {
 			}
 			Main.waitPlayer(Bukkit.getPlayer(name));
 			if (pls.size() == min) {
-				ApiOstrov.sendArenaData(this.name, "§7[§6Инфекция§7]", " ", "§6Скоро старт!", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "§6Инфекция", pls.size(), UniversalArenaState.СТАРТ, false, false);
+				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, "§7[§6Инфекция§7]", "§6Скоро старт!", " ", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "", pls.size());
 				countLobby();
 			} else  if (pls.size() < min) {
-				ApiOstrov.sendArenaData(this.name, "§7[§6Инфекция§7]", " ", "§2Ожидание", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "§6Инфекция", pls.size(), UniversalArenaState.ОЖИДАНИЕ, false, false);
+				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
 				for (final String s : pls) {
 					if (s.equalsIgnoreCase(name)) {
 						waitScore(s);
@@ -376,7 +375,7 @@ public class Arena {
 			pl.sendMessage(Main.pref() + "Игра §6" + getName() + "§7 началась!");
 			pl.closeInventory();
 		}
-		ApiOstrov.sendArenaData(name, "§7[§6Инфекция§7]", " ", "§cИдет Игра", "§7Игроков: " + pls.size(), "§6Инфекция", pls.size(), UniversalArenaState.ИГРА, false, false);
+		ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ИГРА, "§7[§6Инфекция§7]", "§cИдет Игра", " ", "§7Игроков: " + pls.size(), "", pls.size());
 		task = new BukkitRunnable() {
 			
 			@Override

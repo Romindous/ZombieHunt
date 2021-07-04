@@ -36,8 +36,7 @@ import me.Romindous.ZombieHunt.Listeners.MainLis;
 import me.Romindous.ZombieHunt.SQL.SQLGet;
 import me.Romindous.ZombieHunt.SQL.MySQL;
 import ru.komiss77.ApiOstrov;
-import ru.komiss77.Enums.UniversalArenaState;
-import ru.komiss77.Managers.PM;
+import ru.komiss77.modules.player.PM;
 
 public class Main extends JavaPlugin{
 	
@@ -124,7 +123,7 @@ public class Main extends JavaPlugin{
 				for(final String s : ars.getConfigurationSection("arenas").getKeys(false)) {
 					if (ars.contains("arenas." + s + ".fin")) {
 						nonactivearenas.add(s);
-						ApiOstrov.sendArenaData(s, "§7[§6Инфекция§7]", " ", "§2Ожидание", "§7Игроков: §20§7/§2" + ars.get("arenas." + s + ".min"), "Инфекция", 0, UniversalArenaState.ОЖИДАНИЕ, false, false);
+						ApiOstrov.sendArenaData(s, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §20§7/§2" + ars.get("arenas." + s + ".min"), "", 0);
 					}
 				}
 			}
@@ -245,7 +244,7 @@ public class Main extends JavaPlugin{
 	}
 	
 	public static void endArena(Arena ar) {
-		ApiOstrov.sendArenaData(ar.getName(), "§7[§6Инфекция§7]", " ", "§2Ожидание", "§7Игроков: §20§7/§2" + ar.getMin(), "Инфекция", 0, UniversalArenaState.ОЖИДАНИЕ, false, false);
+		ApiOstrov.sendArenaData(ar.getName(), ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §20§7/§2" + ar.getMin(), "", 0);
 		activearenas.remove(ar);
 		for (final String s : ar.getSpcs()) {
 			lobbyPlayer(Bukkit.getPlayer(s));
