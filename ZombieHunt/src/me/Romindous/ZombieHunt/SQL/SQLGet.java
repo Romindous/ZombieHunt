@@ -88,6 +88,7 @@ public class SQLGet {
 			final ResultSet rs = exctStrStmt("SELECT * FROM " + tbl + " WHERE NAME=?", name).executeQuery();
 			if (!rs.next()) {
 				final YamlConfiguration kits = YamlConfiguration.loadConfiguration(new File(Main.folder + File.separator + "kits.yml"));
+				Bukkit.getPlayer(name).sendMessage(Main.folder + "  " + kits.getKeys(true).toString());
 				final PreparedStatement ps = Main.sql.getConn().prepareStatement("INSERT IGNORE INTO " + tbl + "(NAME,ZKIT,PKIT,ZKLS,ZDTHS,PKLS,PDTHS,GMS,PRM) VALUES (?,?,?,?,?,?,?,?,?)");
 				ps.setString(1, name);
 				ps.setString(2, (String) kits.getConfigurationSection("kits.zombie").getKeys(false).toArray()[0]);

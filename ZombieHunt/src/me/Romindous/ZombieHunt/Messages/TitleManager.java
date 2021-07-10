@@ -1,106 +1,119 @@
-package me.Romindous.ZombieHunt.Messages;
+package me.Romindous.ZombieHunt.Messages ;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import me.Romindous.ZombieHunt.Main;
+import net.minecraft.EnumChatFormat;
+import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam;
+import net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam.a;
+import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.server.network.PlayerConnection;
+import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.World;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.ScoreboardTeam;
 
 public class TitleManager {
-	public static void sendTitle(Player player, String msgTitle, String msgSubTitle, int ticks) {
-    	try {
-        Object chatTitle = getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", String.class).invoke(null, "{\"text\": \"" + msgTitle + "\"}");
-        Object chatSubTitle = getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", String.class).invoke(null, "{\"text\": \"" + msgSubTitle + "\"}");
-        Object ttl = getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("TITLE").get(null);
-        sendPacket(player, makeNew("PacketPlayOutTitle", new Class[] {getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0], getNMSClass("IChatBaseComponent")}, new Object[] {ttl, chatTitle}));
-        ttl = getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("SUBTITLE").get(null);
-        sendPacket(player, makeNew("PacketPlayOutTitle", new Class[] {getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0], getNMSClass("IChatBaseComponent")}, new Object[] {ttl, chatSubTitle}));
-        sendTime(player, ticks);
-    	} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | NoSuchFieldException e) {
-    		e.printStackTrace();
+	
+	public static String v;
+	
+	public static void sendNmTg(final String p, final String prf, final String sfx, final EnumChatFormat clr) {
+		final EntityPlayer ep = getNMSPlr(Bukkit.getPlayer(p));
+		final Scoreboard sb = ep.getMinecraftServer().getScoreboard();
+		final ScoreboardTeam st = sb.createTeam(p);
+		st.setPrefix(IChatBaseComponent.a(prf));
+		st.setSuffix(IChatBaseComponent.a(sfx));
+		st.setColor(clr);
+		final PacketPlayOutScoreboardTeam pt = PacketPlayOutScoreboardTeam.a(st);
+		final PacketPlayOutScoreboardTeam crt = PacketPlayOutScoreboardTeam.a(st, true);
+		final PacketPlayOutScoreboardTeam add = PacketPlayOutScoreboardTeam.a(st, p, a.a);
+		final PacketPlayOutScoreboardTeam mod = PacketPlayOutScoreboardTeam.a(st, false);
+		sb.removeTeam(st);
+		for (final EntityHuman e : ep.getWorld().getPlayers()) {
+			((EntityPlayer) e).b.sendPacket(pt);
+			((EntityPlayer) e).b.sendPacket(crt);
+			((EntityPlayer) e).b.sendPacket(add);
+			((EntityPlayer) e).b.sendPacket(mod);
 		}
-    }
-
-    private static void sendTime(Player player, int ticks) {
-    	try {
-			Object ttl = getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("TIMES").get(null);
-			sendPacket(player, makeNew("PacketPlayOutTitle", 
-					new Class[] {getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0], 
-							getNMSClass("IChatBaseComponent"), 
-							int.class, 
-							int.class, 
-							int.class}, 
-					new Object[] {ttl, null, 20, ticks, 20}));
-		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-		}
-    }
-
-    public static void sendActionBar(Player player, String message) {
-    	try {
-    		Object msg = getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", String.class).invoke(null, "{\"text\": \"" + message + "\"}");
-			Object tp = getNMSClass("ChatMessageType").getField("GAME_INFO").get(null);
-			sendPacket(player, makeNew("PacketPlayOutChat", 
-					new Class[] {getNMSClass("IChatBaseComponent"), 
-							getNMSClass("ChatMessageType"), 
-							UUID.class}, 
-					new Object[] {msg, tp, new UUID(0, 0)}));
-		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException | InvocationTargetException | NoSuchMethodException e) {
-			e.printStackTrace();
-		}
-    }
-    
-    public static void sendPacket(Player p, Object pkt) {
-    	try {
-			Object hndl = p.getClass().getMethod("getHandle").invoke(p);
-			Object plcnnct = hndl.getClass().getField("playerConnection").get(hndl);
-			plcnnct.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(plcnnct, pkt);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException| SecurityException | NoSuchFieldException e) {
-			e.printStackTrace();
-		}
-    }
-    
-    public static Class<?> getNMSClass(String cls) {
-    	String v = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-    	try {
-			return Class.forName("net.minecraft.server." + v + "." + cls);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
-    }
-    
-    public static Object makeNew(String name, Class<?>[] clss, Object[] objs) {
-		try {
-			switch (clss.length) {
-			case 1:
-				Constructor<?> cnstr;
-				cnstr = getNMSClass(name).getConstructor(clss[0]);
-				return cnstr.newInstance(objs[0]);
-			case 2:
-				cnstr = getNMSClass(name).getConstructor(clss[0], clss[1]);
-				return cnstr.newInstance(objs[0], objs[1]);
-			case 3:
-				cnstr = getNMSClass(name).getConstructor(clss[0], clss[1], clss[2]);
-				return cnstr.newInstance(objs[0], objs[1], objs[2]);
-			case 4:
-				cnstr = getNMSClass(name).getConstructor(clss[0], clss[1], clss[2], clss[3]);
-				return cnstr.newInstance(objs[0], objs[1], objs[2], objs[3]);
-			case 5:
-				cnstr = getNMSClass(name).getConstructor(clss[0], clss[1], clss[2], clss[3], clss[4]);
-				return cnstr.newInstance(objs[0], objs[1], objs[2], objs[3], objs[4]);
-			default:
-				return null;
-			}
-		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			e.printStackTrace();
-			return null;
-		}
+		//удаляет тиму final PacketPlayOutScoreboardTeam pt = PacketPlayOutScoreboardTeam.a(st);
+		//создает тиму final PacketPlayOutScoreboardTeam pt = PacketPlayOutScoreboardTeam.a(st, true);
+		//модифицирует final PacketPlayOutScoreboardTeam pt = PacketPlayOutScoreboardTeam.a(st, false);
+		//добавляет игрока final PacketPlayOutScoreboardTeam pt = PacketPlayOutScoreboardTeam.a(st, p.getName(), a.a);
+		//учирает игрока final PacketPlayOutScoreboardTeam pt = PacketPlayOutScoreboardTeam.a(st, p.getName(), a.b);
 	}
+	
+	public static void sendTtlSbTtl(final Player p, final String ttl, final String sbttl, final int tm) {
+		final PlayerConnection pc = getNMSPlr(p).b;
+		pc.sendPacket(new ClientboundSetTitleTextPacket(IChatBaseComponent.a(ttl)));
+		pc.sendPacket(new ClientboundSetSubtitleTextPacket(IChatBaseComponent.a(sbttl)));
+		pc.sendPacket(new ClientboundSetTitlesAnimationPacket(2, tm, 20));
+	}
+	
+	public static void sendTtl(final Player p, final String ttl, final int tm) {
+		final PlayerConnection pc = getNMSPlr(p).b;
+		pc.sendPacket(new ClientboundSetTitleTextPacket(IChatBaseComponent.a(ttl)));
+		pc.sendPacket(new ClientboundSetSubtitleTextPacket(IChatBaseComponent.a(" ")));
+		pc.sendPacket(new ClientboundSetTitlesAnimationPacket(2, tm, 20));
+	}
+	
+	public static void sendSbTtl(final Player p, final String sbttl, final int tm) {
+		final PlayerConnection pc = getNMSPlr(p).b;
+		pc.sendPacket(new ClientboundSetTitleTextPacket(IChatBaseComponent.a(" ")));
+		pc.sendPacket(new ClientboundSetSubtitleTextPacket(IChatBaseComponent.a(sbttl)));
+		pc.sendPacket(new ClientboundSetTitlesAnimationPacket(2, tm, 20));
+	}
+	
+	public static void sendAcBr(final Player p, final String msg, final int tm) {
+		final PlayerConnection pc = getNMSPlr(p).b;
+		pc.sendPacket(new ClientboundSetActionBarTextPacket(IChatBaseComponent.a(msg)));
+		pc.sendPacket(new ClientboundSetTitlesAnimationPacket(2, tm, 20));
+	}
+
+    public static EntityPlayer getNMSPlr(final Player p) {
+        try {
+            return (EntityPlayer) p.getClass().getMethod("getHandle").invoke(p);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static World getNMSWrld(final org.bukkit.World w) {
+        try {
+            return (World) w.getClass().getMethod("getHandle").invoke(w);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static ItemStack getNMSIt(org.bukkit.inventory.ItemStack item) {
+        try {
+            return (ItemStack) getCrftClss("inventory.CraftItemStack").getMethod("asNMSCopy", item.getClass()).invoke(null, item);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static Class<?> getCrftClss(final String cls) {
+        try {
+            return Class.forName("org.bukkit.craftbukkit." + v + "." + cls);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     public static void sendBack(final Player p) {
         if (p.getName().contains("omind")) {

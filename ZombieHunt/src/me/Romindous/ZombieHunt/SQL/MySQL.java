@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.Romindous.ZombieHunt.Main;
+import ru.komiss77.ApiOstrov;
 
 public class MySQL {
 	
@@ -18,13 +19,7 @@ public class MySQL {
 		if (!isConOn()) {
 			final YamlConfiguration ost = YamlConfiguration.loadConfiguration(new File(Main.plug.getDataFolder().getParent() + File.separator + "Ostrov" + File.separator + "config.yml"));
 			if (ost.getBoolean("local_database.use")) {
-				try {
-					conn = DriverManager.getConnection(ost.getString("local_database.mysql_host"), ost.getString("local_database.mysql_user"), ost.getString("local_database.mysql_passw"));
-				} catch (SQLException e) {
-					Bukkit.getLogger().info(ost.getString("local_database.mysql_host") + ", " + ost.getString("local_database.mysql_user") + ", " + ost.getString("local_database.mysql_passw"));
-					Bukkit.getLogger().info("Not connected to a database... D:");
-					conn = null;
-				}
+				conn = ApiOstrov.getLocalConnection();
 			} else {
 				try {
 					conn = DriverManager.getConnection(ost.getString("local_database.mysql_host"), ost.getString("local_database.mysql_user"), ost.getString("local_database.mysql_passw"));

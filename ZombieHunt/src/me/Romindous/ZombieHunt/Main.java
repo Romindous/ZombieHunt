@@ -33,10 +33,11 @@ import me.Romindous.ZombieHunt.Game.GameState;
 import me.Romindous.ZombieHunt.Listeners.InterractLis;
 import me.Romindous.ZombieHunt.Listeners.InventoryLis;
 import me.Romindous.ZombieHunt.Listeners.MainLis;
+import me.Romindous.ZombieHunt.Messages.TitleManager;
 import me.Romindous.ZombieHunt.SQL.SQLGet;
+import net.minecraft.EnumChatFormat;
 import me.Romindous.ZombieHunt.SQL.MySQL;
 import ru.komiss77.ApiOstrov;
-import ru.komiss77.modules.player.PM;
 
 public class Main extends JavaPlugin{
 	
@@ -51,7 +52,6 @@ public class Main extends JavaPlugin{
 	
 	
     public void onEnable() {
-		
 		getServer().getConsoleSender().sendMessage(ChatColor.DARK_GREEN + "ZombieHunt is ready!");
 		getCommand("zh").setExecutor(new ZHCmd(this));
 		getCommand("zkits").setExecutor(new KitsCmd(this));
@@ -63,6 +63,8 @@ public class Main extends JavaPlugin{
 			w.setGameRule(GameRule.KEEP_INVENTORY, true);
 			w.setGameRule(GameRule.NATURAL_REGENERATION, false);
 		}
+		
+		TitleManager.v = getServer().getClass().getPackage().getName().split("\\.")[3];
 		
 		//конфиг
 		loadConfigs();
@@ -95,7 +97,9 @@ public class Main extends JavaPlugin{
 
 	public void loadConfigs() {
 		try {
-			File file = new File(getDataFolder() + File.separator + "config.yml");
+	        folder = getDataFolder();
+	        
+			File file = new File(folder + File.separator + "config.yml");
 	        if (!file.exists()) {
 	        	getServer().getConsoleSender().sendMessage("Config for ZombieHunt not found, creating a new one...");
 	    		getConfig().options().copyDefaults(true);
@@ -104,7 +108,7 @@ public class Main extends JavaPlugin{
 	        config = (YamlConfiguration) getConfig();
 	        nonactivearenas.clear();
 	        //киты
-	        file = new File(getDataFolder() + File.separator + "kits.yml");
+	        file = new File(folder + File.separator + "kits.yml");
 	        file.createNewFile();
 	        YamlConfiguration kits = YamlConfiguration.loadConfiguration(file);
 	        if (!kits.contains("kits")) {
@@ -113,7 +117,7 @@ public class Main extends JavaPlugin{
 	        	kits.save(file);
 	        }
 	        //арены
-	        file = new File(getDataFolder() + File.separator + "arenas.yml");
+	        file = new File(folder + File.separator + "arenas.yml");
 	        file.createNewFile();
 	        YamlConfiguration ars = YamlConfiguration.loadConfiguration(file);
 	        if (!ars.contains("arenas")) {
@@ -130,7 +134,6 @@ public class Main extends JavaPlugin{
 	        if (ars.contains("lobby")) {
 	        	lobby = new Location(getServer().getWorld(ars.getString("lobby.world")), ars.getInt("lobby.x"), ars.getInt("lobby.y"), ars.getInt("lobby.z"));
 	        }
-	        folder = getDataFolder();
         }
         catch (IOException | NullPointerException ex) {
         	ex.printStackTrace();
@@ -157,7 +160,7 @@ public class Main extends JavaPlugin{
 		}
 		p.getInventory().clear();
 		p.setGameMode(GameMode.SURVIVAL);
-		ItemStack item = new ItemStack(Material.ROTTEN_FLESH);
+		ItemStack item = new ItemStack(Material.FERMENTED_SPIDER_EYE);
 		ItemMeta meta = item.getItemMeta();
 		meta.setDisplayName(ChatColor.GOLD + "Выбор Карты");
 		item.setItemMeta(meta);
@@ -183,7 +186,7 @@ public class Main extends JavaPlugin{
 	        p.removePotionEffect(ef.getType());
 		}
 		
-		PM.nameTagManager.setNametag(p.getName(), "§7[§5ЛОББИ§7] §2", (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""));
+		TitleManager.sendNmTg(p.getName(), "§7[§5ЛОББИ§7] ", (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""), EnumChatFormat.c);
         Bukkit.getScheduler().runTaskLater(plug, new Runnable() {
 			@Override
 			public void run() {

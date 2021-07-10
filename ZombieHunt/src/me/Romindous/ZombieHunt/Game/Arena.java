@@ -36,8 +36,8 @@ import me.Romindous.ZombieHunt.Main;
 import me.Romindous.ZombieHunt.Commands.KitsCmd;
 import me.Romindous.ZombieHunt.Listeners.MainLis;
 import me.Romindous.ZombieHunt.Messages.TitleManager;
+import net.minecraft.EnumChatFormat;
 import ru.komiss77.ApiOstrov;
-import ru.komiss77.modules.player.PM;
 
 import static org.bukkit.ChatColor.GRAY;
 import static org.bukkit.ChatColor.GOLD;
@@ -150,7 +150,7 @@ public class Arena {
 			ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули карту " + GOLD + getName());
 			for (String s : pls) {
-				TitleManager.sendActionBar(Bukkit.getPlayer(s), amtToHB());
+				TitleManager.sendAcBr(Bukkit.getPlayer(s), amtToHB(), 30);
 				Bukkit.getPlayer(s).sendMessage(Main.pref() + ChatColor.YELLOW + name + GRAY + " вышел с карты!");
 			}
 			if (getPlAmount() == 0) {
@@ -165,7 +165,7 @@ public class Arena {
 			ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, "§7[§6Инфекция§7]", "§6Скоро старт!", " ", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "", pls.size());
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули карту " + GOLD + getName());
 			for (final String s : pls) {
-				TitleManager.sendActionBar(Bukkit.getPlayer(s), amtToHB());
+				TitleManager.sendAcBr(Bukkit.getPlayer(s), amtToHB(), 30);
 				if (!s.equalsIgnoreCase(name)) {
 					Bukkit.getPlayer(s).sendMessage(Main.pref() + ChatColor.YELLOW + name + GRAY + " вышел с карты!");
 				}
@@ -197,7 +197,7 @@ public class Arena {
 			}
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули карту " + GOLD + getName());
 			for (String s : pls) {
-				TitleManager.sendActionBar(Bukkit.getPlayer(s), amtToHB());
+				TitleManager.sendAcBr(Bukkit.getPlayer(s), amtToHB(), 30);
 				Bukkit.getPlayer(s).sendMessage(Main.pref() + ChatColor.YELLOW + name + GRAY + " вышел с карты!");
 			}
 			if (pls.size() < min) {
@@ -241,7 +241,7 @@ public class Arena {
 					task.cancel();
 					pls.addAll(zhs);
 					for (String s : pls) {
-						TitleManager.sendTitle(Bukkit.getPlayer(s), ChatColor.DARK_RED + "Зомби " + GOLD + "победили!", GRAY + "Человеческая расса уничтожена...", 20);
+						TitleManager.sendTtlSbTtl(Bukkit.getPlayer(s), ChatColor.DARK_RED + "Зомби " + GOLD + "победили!", GRAY + "Человеческая расса уничтожена...", 50);
 					}
 					zhs.removeAll(zhs);
 					countEnd(new Random(), true);
@@ -275,10 +275,10 @@ public class Arena {
 			}
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы зашли на карту " + GOLD + getName());
 			final String prm = Main.data.getString(name, "prm", "pls");
-			PM.nameTagManager.setNametag(name, "§7[§6" + getName() + "§7] §2", (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""));
+			TitleManager.sendNmTg(name, "§7[§6" + getName() + "§7] ", (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""), EnumChatFormat.c);
 	        Bukkit.getPlayer(name).setPlayerListName(GRAY + "[" + GOLD + getName() + GRAY + "] " + Bukkit.getPlayer(name).getName() + (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""));
 			for (String s : pls) {
-				TitleManager.sendActionBar(Bukkit.getPlayer(s), amtToHB());
+				TitleManager.sendAcBr(Bukkit.getPlayer(s), amtToHB(), 30);
 				if (!s.equalsIgnoreCase(name)) {
 					Bukkit.getPlayer(s).sendMessage(Main.pref() + ChatColor.YELLOW + name + GRAY + " зашел на карту!");
 				}
@@ -328,7 +328,7 @@ public class Arena {
 				case 5:
 					for (String s : pls) {
 						Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6До начала осталось §d" + time + " §6секунд!");
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6До начала осталось §d" + time + " §6секунд!", 30);
 					}
 					break;
 				case 4:
@@ -393,14 +393,14 @@ public class Arena {
 				switch (time) {
 				case 10:
 					for (String s : pls) {
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6Через §d" + time + " §6секунд кто-то станет зомби!");
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6Через §d" + time + " §6секунд кто-то станет зомби!", 30);
 						Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
 					}
 					break;
 				case 5:
 					for (String s : pls) {
-						TitleManager.sendTitle(Bukkit.getPlayer(s), "", GOLD + "" + time, 20);
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6Через §d" + time + " §6секунд кто-то станет зомби!");
+						TitleManager.sendSbTtl(Bukkit.getPlayer(s), String.valueOf(GOLD) + time, 10);
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6Через §d" + time + " §6секунд кто-то станет зомби!", 30);
 						Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
 					}
 					break;
@@ -409,7 +409,7 @@ public class Arena {
 				case 2:
 				case 1:
 					for (String s : pls) {
-						TitleManager.sendTitle(Bukkit.getPlayer(s), "", GOLD + "" + time, 20);
+						TitleManager.sendSbTtl(Bukkit.getPlayer(s), String.valueOf(GOLD) + time, 10);
 						Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
 					}
 					break;
@@ -437,18 +437,18 @@ public class Arena {
 		for (String s : zhs) {
 			giveKit(s, true);
 			kls.put('z' + s, (byte) 0);
-			PM.nameTagManager.setNametag(s, "§c", "");
+			TitleManager.sendNmTg(s, "", "", EnumChatFormat.m);
 			Bukkit.getPlayer(s).setPlayerListName(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_RED + Bukkit.getPlayer(s).getName());
 			Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.ENTITY_ZOMBIE_AMBIENT, 20, 1);
-			TitleManager.sendTitle(Bukkit.getPlayer(s), GOLD + "Вы - " + ChatColor.RED + "Зомби", ChatColor.DARK_RED + "Убейте всех выживших за " + GOLD + (time / 60) + ChatColor.DARK_RED + " минут!", 20);
+			TitleManager.sendTtlSbTtl(Bukkit.getPlayer(s), GOLD + "Вы - " + ChatColor.RED + "Зомби", ChatColor.DARK_RED + "Убейте всех выживших за " + GOLD + (time / 60) + ChatColor.DARK_RED + " минут!", 50);
 		}
 		for (String s : pls) {
 			giveKit(s, false);
 			kls.put('p' + s, (byte) 0);
-			PM.nameTagManager.setNametag(s, "§a", "");
+			TitleManager.sendNmTg(s, "", "", EnumChatFormat.k);
 			Bukkit.getPlayer(s).setPlayerListName(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_GREEN + Bukkit.getPlayer(s).getName());
 			Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 20, 1);
-			TitleManager.sendTitle(Bukkit.getPlayer(s), GOLD + "Вы - " + ChatColor.GREEN + "Выживший", ChatColor.DARK_GREEN + "Выживайте на протяжении " + GOLD + (time / 60) + ChatColor.DARK_GREEN + " минут!", 20);
+			TitleManager.sendTtlSbTtl(Bukkit.getPlayer(s), GOLD + "Вы - " + ChatColor.GREEN + "Выживший", ChatColor.DARK_GREEN + "Выживайте на протяжении " + GOLD + (time / 60) + ChatColor.DARK_GREEN + " минут!", 50);
 		}
 		
 		task = new BukkitRunnable() {
@@ -493,27 +493,27 @@ public class Arena {
 				switch (time) {
 				case 120:
 					for (String s : pls) {
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6У зомби осталось §62 §6минуты!");
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6У зомби осталось §62 §6минуты!", 30);
 					}
 					for (String s : zhs) {
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6У зомби осталось §62 §6минуты!");
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6У зомби осталось §62 §6минуты!", 30);
 					}
 					break;
 				case 60:
 					for (String s : pls) {
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6Выжившие победят через §61 §6минуту!");
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6Выжившие победят через §61 §6минуту!", 30);
 					}
 					for (String s : zhs) {
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6Выжившие победят через §61 §6минуту!");
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6Выжившие победят через §61 §6минуту!", 30);
 					}
 					break;
 				case 30:
 				case 10:
 					for (String s : pls) {
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6У зомби осталось §6" + time + " §6секунд!");
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6У зомби осталось §6" + time + " §6секунд!", 30);
 					}
 					for (String s : zhs) {
-						TitleManager.sendActionBar(Bukkit.getPlayer(s), "§6У зомби осталось §6" + time + " §6секунд!");
+						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6У зомби осталось §6" + time + " §6секунд!", 30);
 					}
 					break;
 				case 5:
@@ -522,11 +522,11 @@ public class Arena {
 				case 2:
 				case 1:
 					for (String s : pls) {
-						TitleManager.sendTitle(Bukkit.getPlayer(s), GOLD + "" + time, "", 20);
+						TitleManager.sendTtl(Bukkit.getPlayer(s), String.valueOf(GOLD) + time, 10);
 						Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
 					}
 					for (String s : zhs) {
-						TitleManager.sendTitle(Bukkit.getPlayer(s), GOLD + "" + time, "", 20);
+						TitleManager.sendTtl(Bukkit.getPlayer(s), String.valueOf(GOLD) + time, 10);
 						Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
 					}
 					break;
@@ -551,7 +551,7 @@ public class Arena {
 		pls.addAll(zhs);
 		if (!zwin) {
 			for (String s : pls) {
-				TitleManager.sendTitle(Bukkit.getPlayer(s), ChatColor.GREEN + "Выжившие " + GOLD + "победили!", GRAY + "Человечество продолжает свою жизнь...", 20);
+				TitleManager.sendTtlSbTtl(Bukkit.getPlayer(s), ChatColor.GREEN + "Выжившие " + GOLD + "победили!", GRAY + "Человечество продолжает свою жизнь...", 50);
 				Main.data.chngNum(s, "gms", 1, "pls");
 			}
 		}
@@ -600,7 +600,7 @@ public class Arena {
 	
 	public void zombifyPl(final Player p) {
 		p.playSound(p.getLocation(), Sound.ENTITY_ZOMBIE_AMBIENT, 2, 1);
-		PM.nameTagManager.setNametag(p.getName(), "§c", "");
+		TitleManager.sendNmTg(p.getName(), "", "", EnumChatFormat.m);
         p.setPlayerListName(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_RED + p.getName());
 		p.closeInventory();
 		p.setFireTicks(0);
@@ -617,9 +617,9 @@ public class Arena {
 		pls.remove(p.getName());
 		zhs.add(p.getName());
 		if (time > 60) {
-			TitleManager.sendTitle(p, GOLD + "Вы - " + ChatColor.RED + "Зомби", ChatColor.DARK_RED + "Убейте всех выживших за " + GOLD + (time / 60) + ChatColor.DARK_RED + " минут!", 20);
+			TitleManager.sendTtlSbTtl(p, GOLD + "Вы - " + ChatColor.RED + "Зомби", ChatColor.DARK_RED + "Убейте всех выживших за " + GOLD + (time / 60) + ChatColor.DARK_RED + " минут!", 50);
 		} else {
-			TitleManager.sendTitle(p, GOLD + "Вы - " + ChatColor.RED + "Зомби", ChatColor.DARK_RED + "Убейте всех выживших за " + GOLD + time + ChatColor.DARK_RED + " cекунд!", 20);
+			TitleManager.sendTtlSbTtl(p, GOLD + "Вы - " + ChatColor.RED + "Зомби", ChatColor.DARK_RED + "Убейте всех выживших за " + GOLD + time + ChatColor.DARK_RED + " cекунд!", 50);
 		}
 		giveKit(p.getName(), true);
 		runnScore(p.getName(), true);
@@ -630,7 +630,7 @@ public class Arena {
 					task.cancel();
 					pls.addAll(zhs);
 					for (String s : pls) {
-						TitleManager.sendTitle(Bukkit.getPlayer(s), ChatColor.DARK_RED + "Зомби " + GOLD + "победили!", GRAY + "Человеческая расса уничтожена...", 20);
+						TitleManager.sendTtlSbTtl(Bukkit.getPlayer(s), ChatColor.DARK_RED + "Зомби " + GOLD + "победили!", GRAY + "Человеческая расса уничтожена...", 50);
 					}
 					zhs.removeAll(zhs);
 					countEnd(new Random(), true);

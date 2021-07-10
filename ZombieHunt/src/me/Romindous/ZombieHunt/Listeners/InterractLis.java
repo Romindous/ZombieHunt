@@ -80,10 +80,10 @@ public class InterractLis implements Listener{
 							@Override
 							public void run() {
 								p.setMetadata("jp", new FixedMetadataValue(Main.plug, true));
-								TitleManager.sendActionBar(p, ChatColor.DARK_GREEN + "Вы готовы к прыжку");
+								TitleManager.sendAcBr(p, ChatColor.DARK_GREEN + "Вы готовы к прыжку", 30);
 							}}, 200);
 					} else {
-						TitleManager.sendActionBar(p, ChatColor.RED + "Вы еще набираете силы для прыжка");
+						TitleManager.sendAcBr(p, ChatColor.RED + "Вы еще набираете силы для прыжка", 30);
 					}
 					break;
 				}
@@ -102,11 +102,11 @@ public class InterractLis implements Listener{
 							public void run() {
 								p.setMetadata("sp", new FixedMetadataValue(Main.plug, true));
 								if (Main.activearenas.contains(ar)) {
-									TitleManager.sendActionBar(p, ChatColor.LIGHT_PURPLE + "Ваша способность готова");
+									TitleManager.sendAcBr(p, ChatColor.LIGHT_PURPLE + "Ваша способность готова", 30);
 								}
 							}}, 600);
 					} else {
-						TitleManager.sendActionBar(p, ChatColor.RED + "Ваша способность еще не готова");
+						TitleManager.sendAcBr(p, ChatColor.RED + "Ваша способность еще не готова", 30);
 					}
 					return;
 				case NETHER_STAR:
@@ -127,11 +127,11 @@ public class InterractLis implements Listener{
 							public void run() {
 								p.setMetadata("sp", new FixedMetadataValue(Main.plug, true));
 								if (Main.activearenas.contains(ar)) {
-									TitleManager.sendActionBar(p, ChatColor.LIGHT_PURPLE + "Ваша способность готова");
+									TitleManager.sendAcBr(p, ChatColor.LIGHT_PURPLE + "Ваша способность готова", 30);
 								}
 							}}, 600);
 					} else {
-						TitleManager.sendActionBar(p, ChatColor.RED + "Ваша способность еще не готова");
+						TitleManager.sendAcBr(p, ChatColor.RED + "Ваша способность еще не готова", 30);
 					}
 					return;
 				default:
@@ -179,11 +179,11 @@ public class InterractLis implements Listener{
 							public void run() {
 								p.setMetadata("sp", new FixedMetadataValue(Main.plug, true));
 								if (Main.activearenas.contains(ar)) {
-									TitleManager.sendActionBar(p, ChatColor.LIGHT_PURPLE + "Ваша способность готова");
+									TitleManager.sendAcBr(p, ChatColor.LIGHT_PURPLE + "Ваша способность готова", 30);
 								}
 							}}, 600);
 					} else {
-						TitleManager.sendActionBar(p, ChatColor.RED + "Ваша способность еще не готова");
+						TitleManager.sendAcBr(p, ChatColor.RED + "Ваша способность еще не готова", 30);
 					}
 					return;
 				case NETHER_STAR:
@@ -204,11 +204,11 @@ public class InterractLis implements Listener{
 							public void run() {
 								p.setMetadata("sp", new FixedMetadataValue(Main.plug, true));
 								if (Main.activearenas.contains(ar)) {
-									TitleManager.sendActionBar(p, ChatColor.LIGHT_PURPLE + "Ваша способность готова");
+									TitleManager.sendAcBr(p, ChatColor.LIGHT_PURPLE + "Ваша способность готова", 30);
 								}
 							}}, 600);
 					} else {
-						TitleManager.sendActionBar(p, ChatColor.RED + "Ваша способность еще не готова");
+						TitleManager.sendAcBr(p, ChatColor.RED + "Ваша способность еще не готова", 30);
 					}
 					return;
 				default:
