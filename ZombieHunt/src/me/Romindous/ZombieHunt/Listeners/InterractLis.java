@@ -58,7 +58,7 @@ public class InterractLis implements Listener{
 	}
 	
 	@EventHandler
-	public void onInter(PlayerInteractEvent e) {
+	public void onInter(final PlayerInteractEvent e) {
 		final Player p = e.getPlayer();
 		final ItemStack it = e.getItem();
 		final Arena ar = Arena.getPlayerArena(p.getName());
@@ -227,7 +227,7 @@ public class InterractLis implements Listener{
 				p.playSound(p.getLocation(), Sound.BLOCK_BEEHIVE_EXIT, 80, 1);
 				p.performCommand("zkits choose");
 			} else if (it.getItemMeta().getDisplayName().contains("Выход")) {
-				if (p.getInventory().getItemInMainHand().getType() == Material.SLIME_BALL) {
+				if (it.getType() == Material.SLIME_BALL) {
 					e.setCancelled(true);
 					p.performCommand("zh leave");
 				} else if (it.getType() == Material.MAGMA_CREAM) {

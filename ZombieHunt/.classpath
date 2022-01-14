@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="C:/Users/Romin/Downloads/ZH/spigot-1.17.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Romin/Downloads/ZH/plugins/Ostrov.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Romin/Downloads/ZH/plugins/DeluxeChat.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk-17.0.1">
+		<attributes>
+			<attribute name="module" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Romindous/Downloads/ZH/plugins/Ostrov.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Romindous/Downloads/ZH/plugins/DeluxeChat.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Romindous/Downloads/serv2/versions/1.18.1/paper-1.18.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Romindous/Downloads/serv2/libraries/io/papermc/paper/paper-api/1.18.1-R0.1-SNAPSHOT/paper-api-1.18.1-R0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Romindous/Downloads/serv2/libraries/net/kyori/adventure-api/4.9.3/adventure-api-4.9.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Romindous/Downloads/serv2/libraries/net/md-5/bungeecord-chat/1.16-R0.4/bungeecord-chat-1.16-R0.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Romindous/Downloads/serv2/libraries/com/mojang/authlib/3.2.38/authlib-3.2.38.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

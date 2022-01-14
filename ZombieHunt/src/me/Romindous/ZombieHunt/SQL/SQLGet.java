@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.Romindous.ZombieHunt.Main;
+import ru.komiss77.ApiOstrov;
 
 public class SQLGet {
 	
@@ -50,7 +51,7 @@ public class SQLGet {
 	public void chngNum(final String name, final String cat, final int n, final String tbl) {
 		try {
 			final ResultSet rs = exctStrStmt("SELECT * FROM " + tbl + " WHERE NAME=?", name).executeQuery(); rs.next();
-			final PreparedStatement ps = Main.sql.getConn().prepareStatement("UPDATE pls SET " + cat.toUpperCase() + "=? WHERE NAME=?");
+			final PreparedStatement ps = ApiOstrov.getLocalConnection().prepareStatement("UPDATE pls SET " + cat.toUpperCase() + "=? WHERE NAME=?");
 			ps.setInt(1, rs.getInt(cat.toUpperCase()) + n);
 			ps.setString(2, name);
 			ps.executeUpdate();
@@ -76,7 +77,7 @@ public class SQLGet {
 	}
 	
 	public PreparedStatement exctStrStmt(final String comm, final String... vars) throws SQLException {
-		final PreparedStatement ps = Main.sql.getConn().prepareStatement(comm);
+		final PreparedStatement ps = ApiOstrov.getLocalConnection().prepareStatement(comm);
 		for (byte i = 1; i <= vars.length; i++) {
 			ps.setString(i, vars[i-1]);
 		}
@@ -89,7 +90,7 @@ public class SQLGet {
 			if (!rs.next()) {
 				final YamlConfiguration kits = YamlConfiguration.loadConfiguration(new File(Main.folder + File.separator + "kits.yml"));
 				Bukkit.getPlayer(name).sendMessage(Main.folder + "  " + kits.getKeys(true).toString());
-				final PreparedStatement ps = Main.sql.getConn().prepareStatement("INSERT IGNORE INTO " + tbl + "(NAME,ZKIT,PKIT,ZKLS,ZDTHS,PKLS,PDTHS,GMS,PRM) VALUES (?,?,?,?,?,?,?,?,?)");
+				final PreparedStatement ps = ApiOstrov.getLocalConnection().prepareStatement("INSERT IGNORE INTO " + tbl + "(NAME,ZKIT,PKIT,ZKLS,ZDTHS,PKLS,PDTHS,GMS,PRM) VALUES (?,?,?,?,?,?,?,?,?)");
 				ps.setString(1, name);
 				ps.setString(2, (String) kits.getConfigurationSection("kits.zombie").getKeys(false).toArray()[0]);
 				ps.setString(3, (String) kits.getConfigurationSection("kits.player").getKeys(false).toArray()[0]);

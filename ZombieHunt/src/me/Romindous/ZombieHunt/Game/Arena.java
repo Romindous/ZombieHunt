@@ -1,6 +1,7 @@
 package me.Romindous.ZombieHunt.Game;
 
 import java.io.File;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -36,8 +37,11 @@ import me.Romindous.ZombieHunt.Main;
 import me.Romindous.ZombieHunt.Commands.KitsCmd;
 import me.Romindous.ZombieHunt.Listeners.MainLis;
 import me.Romindous.ZombieHunt.Messages.TitleManager;
+import net.kyori.adventure.text.Component;
 import net.minecraft.EnumChatFormat;
 import ru.komiss77.ApiOstrov;
+import ru.komiss77.Ostrov;
+import ru.komiss77.enums.Stat;
 
 import static org.bukkit.ChatColor.GRAY;
 import static org.bukkit.ChatColor.GOLD;
@@ -57,8 +61,9 @@ public class Arena {
 	private BukkitTask task;
 	private final Main plug;
 	private final ScoreboardManager smg;
+	private final HashSet<String> ozhs;
 	
-	public Arena(String name, int min, int max, Location[] spawns, Main plug) {
+	public Arena(final String name, final int min, final int max, final Location[] spawns, final Main plug) {
 		this.max = max;
 		this.min = min;
 		this.name = name;
@@ -66,6 +71,7 @@ public class Arena {
 		this.plug = plug;
 		this.kls = new HashMap<String, Byte>();
 		this.spcs = new HashSet<String>();
+		this.ozhs = new HashSet<String>();
 		this.pls = new LinkedList<String>();
 		this.zhs = new LinkedList<String>();
 		this.state = GameState.LOBBY_WAIT;
@@ -109,11 +115,11 @@ public class Arena {
 		return task;
 	}
 	
-	public void addKls(String name) {
-		kls.replace(name, (byte) (kls.get(name) + 1));
+	public void addKls(final String name) {
+		kls.replace(name, (byte) ((kls.get(name) == null ? 0 : kls.get(name)) + 1));
 	}
 	
-	private void nullKls(String name2) {
+	private void nullKls(final String name) {
 		kls.replace(name, (byte) 0);
 		
 	}
@@ -145,10 +151,10 @@ public class Arena {
 		case LOBBY_WAIT:
 			pls.remove(name);
 			for (Player pl : Bukkit.getOnlinePlayers()) {
-				pl.setPlayerListFooter(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!");
+				pl.sendPlayerListFooter(Component.text(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!"));
 			}
 			ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
-			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули карту " + GOLD + getName());
+			Bukkit.getPlayer(name).sendMessage(Main.pref() + "§7Вы покинули карту §6" + getName());
 			for (String s : pls) {
 				TitleManager.sendAcBr(Bukkit.getPlayer(s), amtToHB(), 30);
 				Bukkit.getPlayer(s).sendMessage(Main.pref() + ChatColor.YELLOW + name + GRAY + " вышел с карты!");
@@ -160,7 +166,7 @@ public class Arena {
 		case LOBBY_START:
 			pls.remove(name);
 			for (Player pl : Bukkit.getOnlinePlayers()) {
-				pl.setPlayerListFooter(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!");
+				pl.sendPlayerListFooter(Component.text(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!"));
 			}
 			ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, "§7[§6Инфекция§7]", "§6Скоро старт!", " ", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "", pls.size());
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули карту " + GOLD + getName());
@@ -182,10 +188,7 @@ public class Arena {
 				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
 			} else {
 				for (final String s : pls) {
-					Main.chgSbdTm(Bukkit.getPlayer(s).getScoreboard(), "onwt", "", GOLD + (min - pls.size() > 1 ? 
-							"" + (min - pls.size()) + GRAY + " игроков" 
-							:
-							"" + (min - pls.size()) + GRAY + " игрока"));
+					Main.chgSbdTm(Bukkit.getPlayer(s).getScoreboard(), "plamt", "", "" + GOLD + pls.size() + GRAY + "/" + GOLD + max);
 				}
 				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, "§7[§6Инфекция§7]", "§6Скоро старт!", " ", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "", pls.size());
 			}
@@ -193,7 +196,7 @@ public class Arena {
 		case BEGINING:
 			pls.remove(name);
 			for (Player pl : Bukkit.getOnlinePlayers()) {
-				pl.setPlayerListFooter(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!");
+				pl.sendPlayerListFooter(Component.text(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!"));
 			}
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули карту " + GOLD + getName());
 			for (String s : pls) {
@@ -206,8 +209,18 @@ public class Arena {
 					state = GameState.LOBBY_WAIT;
 				}
 				for (final String s : pls) {
-					Bukkit.getPlayer(s).sendMessage(Main.pref() + "На карте недостаточно игроков для начала!");
-					Bukkit.getPlayer(s).teleport(Main.lobby);
+					final Player p = Bukkit.getPlayer(s);
+					p.sendMessage(Main.pref() + "На карте недостаточно игроков для начала!");
+					p.teleport(Main.lobby);
+					Ostrov.sync(() -> {
+						for (final Player pl : Bukkit.getOnlinePlayers()) {
+							final Arena ar = Arena.getPlayerArena(pl.getName());
+							if (ar == null || ar.getState() == GameState.LOBBY_WAIT) {
+								p.showPlayer(plug, pl);
+								pl.showPlayer(plug, p);
+							}
+						}
+					}, 4);
 					waitScore(s);
 				}
 				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
@@ -251,7 +264,7 @@ public class Arena {
 				}
 			}
 			for (Player pl : Bukkit.getOnlinePlayers()) {
-				pl.setPlayerListFooter(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!");
+				pl.sendPlayerListFooter(Component.text(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!"));
 			}
 			Main.data.chngNum(name, "gms", 1, "pls");
 			break;
@@ -259,7 +272,7 @@ public class Arena {
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы покинули игру " + GOLD + getName());
 			pls.remove(name);
 			for (Player pl : Bukkit.getOnlinePlayers()) {
-				pl.setPlayerListFooter(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!");
+				pl.sendPlayerListFooter(Component.text(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!"));
 			}
 			break;
 		default:
@@ -271,12 +284,12 @@ public class Arena {
 		if (pls.size() < max) {
 			pls.add(name);
 			for (Player pl : Bukkit.getOnlinePlayers()) {
-				pl.setPlayerListFooter(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!");
+				pl.sendPlayerListFooter(Component.text(GRAY + "Сейчас в игре: " + GOLD + MainLis.getPlaying() + GRAY + " человек!"));
 			}
 			Bukkit.getPlayer(name).sendMessage(Main.pref() + GRAY + "Вы зашли на карту " + GOLD + getName());
 			final String prm = Main.data.getString(name, "prm", "pls");
 			TitleManager.sendNmTg(name, "§7[§6" + getName() + "§7] ", (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""), EnumChatFormat.c);
-	        Bukkit.getPlayer(name).setPlayerListName(GRAY + "[" + GOLD + getName() + GRAY + "] " + Bukkit.getPlayer(name).getName() + (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""));
+	        Bukkit.getPlayer(name).playerListName(Component.text(GRAY + "[" + GOLD + getName() + GRAY + "] " + Bukkit.getPlayer(name).getName() + (prm.length() > 1 ? " §7(§e" + prm + "§7)" : "")));
 			for (String s : pls) {
 				TitleManager.sendAcBr(Bukkit.getPlayer(s), amtToHB(), 30);
 				if (!s.equalsIgnoreCase(name)) {
@@ -287,7 +300,7 @@ public class Arena {
 			if (pls.size() == min) {
 				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, "§7[§6Инфекция§7]", "§6Скоро старт!", " ", "§7Игроков: §6" + pls.size() + "§7/§6" + max, "", pls.size());
 				countLobby();
-			} else  if (pls.size() < min) {
+			} else if (pls.size() < min) {
 				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §2" + pls.size() + "§7/§2" + min, "", pls.size());
 				for (final String s : pls) {
 					if (s.equalsIgnoreCase(name)) {
@@ -353,7 +366,7 @@ public class Arena {
 	
 	//отсчет в игре
 	public void countBegining() {
-		final Random rand = new Random();
+		final SecureRandom rand = new SecureRandom();
 		state = GameState.BEGINING;
 		time = 11;
 		for (String name : pls) {
@@ -425,12 +438,13 @@ public class Arena {
 		}.runTaskTimer(plug, 0, 20);
 	}
 
-	public void countGame(Random rand) {
+	public void countGame(final SecureRandom rand) {
 		state = GameState.RUNNING;
 		time = (short) ((5 + ((short) (pls.size() / 5))) * 60);
 		for (byte i = 0; i < plsToZhs(); i++) {
 			int tr = rand.nextInt(pls.size());
 			msgEveryone(Main.pref() + ChatColor.RED + pls.get(tr) + GRAY + " превратился в Зомби!");
+			ozhs.add(pls.get(tr));
 			zhs.add(pls.get(tr));
 			pls.remove(pls.get(tr));
 		}
@@ -438,7 +452,7 @@ public class Arena {
 			giveKit(s, true);
 			kls.put('z' + s, (byte) 0);
 			TitleManager.sendNmTg(s, "", "", EnumChatFormat.m);
-			Bukkit.getPlayer(s).setPlayerListName(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_RED + Bukkit.getPlayer(s).getName());
+			Bukkit.getPlayer(s).playerListName(Component.text(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_RED + Bukkit.getPlayer(s).getName()));
 			Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.ENTITY_ZOMBIE_AMBIENT, 20, 1);
 			TitleManager.sendTtlSbTtl(Bukkit.getPlayer(s), GOLD + "Вы - " + ChatColor.RED + "Зомби", ChatColor.DARK_RED + "Убейте всех выживших за " + GOLD + (time / 60) + ChatColor.DARK_RED + " минут!", 50);
 		}
@@ -446,7 +460,7 @@ public class Arena {
 			giveKit(s, false);
 			kls.put('p' + s, (byte) 0);
 			TitleManager.sendNmTg(s, "", "", EnumChatFormat.k);
-			Bukkit.getPlayer(s).setPlayerListName(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_GREEN + Bukkit.getPlayer(s).getName());
+			Bukkit.getPlayer(s).playerListName(Component.text(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_GREEN + Bukkit.getPlayer(s).getName()));
 			Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 20, 1);
 			TitleManager.sendTtlSbTtl(Bukkit.getPlayer(s), GOLD + "Вы - " + ChatColor.GREEN + "Выживший", ChatColor.DARK_GREEN + "Выживайте на протяжении " + GOLD + (time / 60) + ChatColor.DARK_GREEN + " минут!", 50);
 		}
@@ -456,7 +470,7 @@ public class Arena {
 			@Override
 			public void run() {
 				//scoreboard stuff
-				for (String s : zhs) {
+				for (final String s : zhs) {
 					final Scoreboard sb = Bukkit.getPlayer(s).getScoreboard();
 					if (sb.getTeam("pls") == null) {
 						runnScore(s, true);
@@ -469,7 +483,7 @@ public class Arena {
 								(int) (((float) time) / 60.0f) + ":" + (time % 60)));
 					}
 				}
-				for (String s : pls) {
+				for (final String s : pls) {
 					final Scoreboard sb = Bukkit.getPlayer(s).getScoreboard();
 					if (sb.getTeam("pls") == null) {
 						runnScore(s, false);
@@ -483,7 +497,7 @@ public class Arena {
 					}
 				}
 				if (time % 30 == 0) {
-					for (String s : pls) {
+					for (final String s : pls) {
 						Bukkit.getPlayer(s).addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 100, 1));
 						if (Bukkit.getPlayer(s).getInventory().contains(Material.BOW) || (Bukkit.getPlayer(s).getInventory().getItemInOffHand() != null && Bukkit.getPlayer(s).getInventory().getItemInOffHand().getType() == Material.BOW)) {
 							Bukkit.getPlayer(s).getInventory().addItem(new ItemStack(Material.ARROW, 2));
@@ -492,27 +506,27 @@ public class Arena {
 				}
 				switch (time) {
 				case 120:
-					for (String s : pls) {
+					for (final String s : pls) {
 						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6У зомби осталось §62 §6минуты!", 30);
 					}
-					for (String s : zhs) {
+					for (final String s : zhs) {
 						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6У зомби осталось §62 §6минуты!", 30);
 					}
 					break;
 				case 60:
-					for (String s : pls) {
+					for (final String s : pls) {
 						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6Выжившие победят через §61 §6минуту!", 30);
 					}
-					for (String s : zhs) {
+					for (final String s : zhs) {
 						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6Выжившие победят через §61 §6минуту!", 30);
 					}
 					break;
 				case 30:
 				case 10:
-					for (String s : pls) {
+					for (final String s : pls) {
 						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6У зомби осталось §6" + time + " §6секунд!", 30);
 					}
-					for (String s : zhs) {
+					for (final String s : zhs) {
 						TitleManager.sendAcBr(Bukkit.getPlayer(s), "§6У зомби осталось §6" + time + " §6секунд!", 30);
 					}
 					break;
@@ -521,11 +535,11 @@ public class Arena {
 				case 3:
 				case 2:
 				case 1:
-					for (String s : pls) {
+					for (final String s : pls) {
 						TitleManager.sendTtl(Bukkit.getPlayer(s), String.valueOf(GOLD) + time, 10);
 						Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
 					}
-					for (String s : zhs) {
+					for (final String s : zhs) {
 						TitleManager.sendTtl(Bukkit.getPlayer(s), String.valueOf(GOLD) + time, 10);
 						Bukkit.getPlayer(s).playSound(Bukkit.getPlayer(s).getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
 					}
@@ -545,12 +559,26 @@ public class Arena {
 		}.runTaskTimer(plug, 0, 20);
 	}
 	
-	public void countEnd(Random rand, boolean zwin) {
+	public void countEnd(final Random rand, final boolean zwin) {
 		time = 6;
 		state = GameState.END;
+		if (zwin) {
+			for (final String s : ozhs) {
+				final Player p = Bukkit.getPlayer(s);
+				if (p != null) {
+					ApiOstrov.addStat(p, Stat.ZH_game);
+					ApiOstrov.addStat(p, Stat.ZH_win);
+				}
+			}
+		} else {
+			for (final String s : pls) {
+				ApiOstrov.addStat(Bukkit.getPlayer(s), Stat.ZH_game);
+				ApiOstrov.addStat(Bukkit.getPlayer(s), Stat.ZH_win);
+			}
+		}
 		pls.addAll(zhs);
 		if (!zwin) {
-			for (String s : pls) {
+			for (final String s : pls) {
 				TitleManager.sendTtlSbTtl(Bukkit.getPlayer(s), ChatColor.GREEN + "Выжившие " + GOLD + "победили!", GRAY + "Человечество продолжает свою жизнь...", 50);
 				Main.data.chngNum(s, "gms", 1, "pls");
 			}
@@ -601,7 +629,7 @@ public class Arena {
 	public void zombifyPl(final Player p) {
 		p.playSound(p.getLocation(), Sound.ENTITY_ZOMBIE_AMBIENT, 2, 1);
 		TitleManager.sendNmTg(p.getName(), "", "", EnumChatFormat.m);
-        p.setPlayerListName(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_RED + p.getName());
+        p.playerListName(Component.text(GRAY + "[" + GOLD + getName() + GRAY + "] " + ChatColor.DARK_RED + p.getName()));
 		p.closeInventory();
 		p.setFireTicks(0);
 		for (final PotionEffect eff : p.getActivePotionEffects()) {
@@ -614,6 +642,9 @@ public class Arena {
 			}
 		}
 		msgEveryone(Main.pref() + ChatColor.RED + p.getName() + GRAY + " превратился в Зомби!");
+		ApiOstrov.addStat(p, Stat.ZH_pdths);
+		ApiOstrov.addStat(p, Stat.ZH_game);
+		ApiOstrov.addStat(p, Stat.ZH_loose);
 		pls.remove(p.getName());
 		zhs.add(p.getName());
 		if (time > 60) {
@@ -687,7 +718,8 @@ public class Arena {
 	
 	public void giveKit(final String name, final boolean isZH) {
 		final YamlConfiguration kits = YamlConfiguration.loadConfiguration(new File(Main.folder + File.separator + "kits.yml"));
-		final PlayerInventory inv = Bukkit.getPlayer(name).getInventory();
+		final Player p = Bukkit.getPlayer(name);
+		final PlayerInventory inv = p.getInventory();
 		final ConfigurationSection cs = kits.getConfigurationSection(isZH ? 
 			"kits.zombie." + Main.data.getString(name, "zkit", "pls")
 			: 
@@ -700,18 +732,19 @@ public class Arena {
 		for (byte i = 0; cs.contains("" + i); i++) {
 			inv.setItem(i, KitsCmd.getItemStack(cs.getConfigurationSection("" + i)));
 		}
+		p.closeInventory();
 		Bukkit.getScheduler().scheduleSyncDelayedTask(plug, new Runnable() {
 			@Override
 			public void run() {
-				Bukkit.getPlayer(name).getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(cs.getInt("hp"));
-				Bukkit.getPlayer(name).setHealth(cs.getInt("hp"));
+				p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(cs.getInt("hp"));
+				p.setHealth(cs.getInt("hp"));
 			}
 		}, 2);
 	}
 	
 	public void waitScore(final String name) {
 		final Scoreboard sb = smg.getNewScoreboard();
-		final Objective ob = sb.registerNewObjective("Инфекция", "", GRAY + "[" + GOLD + "Инфекция" + GRAY + "]");
+		final Objective ob = sb.registerNewObjective("Инфекция", "", Component.text(GRAY + "[" + GOLD + "Инфекция" + GRAY + "]"));
 		ob.setDisplaySlot(DisplaySlot.SIDEBAR);
 		ob.getScore(GRAY + "Карта: " + ChatColor.DARK_GREEN + getName())
 		.setScore(8);
@@ -737,7 +770,7 @@ public class Arena {
 	
 	public void lobbyScore(final String name) {
 		final Scoreboard sb = smg.getNewScoreboard();
-		final Objective ob = sb.registerNewObjective("Инфекция", "", GRAY + "[" + GOLD + "Инфекция" + GRAY + "]");
+		final Objective ob = sb.registerNewObjective("Инфекция", "", Component.text(GRAY + "[" + GOLD + "Инфекция" + GRAY + "]"));
 		ob.setDisplaySlot(DisplaySlot.SIDEBAR);
 		ob.getScore(GRAY + "Карта: " + ChatColor.DARK_GREEN + getName())
 		.setScore(9);
@@ -763,7 +796,7 @@ public class Arena {
 	
 	public void beginScore(final String name) {
 		final Scoreboard sb = smg.getNewScoreboard();
-		final Objective ob = sb.registerNewObjective("Инфекция", "", GRAY + "[" + GOLD + "Инфекция" + GRAY + "]");
+		final Objective ob = sb.registerNewObjective("Инфекция", "", Component.text(GRAY + "[" + GOLD + "Инфекция" + GRAY + "]"));
 		ob.setDisplaySlot(DisplaySlot.SIDEBAR);
 		ob.getScore(GRAY + "Карта: " + ChatColor.DARK_GREEN + getName())
 		.setScore(9);
@@ -789,7 +822,7 @@ public class Arena {
 	
 	public void runnScore(final String name, final boolean isZH) {
 		final Scoreboard sb = smg.getNewScoreboard();
-		final Objective ob = sb.registerNewObjective("Инфекция", "", GRAY + "[" + GOLD + "Инфекция" + GRAY + "]");
+		final Objective ob = sb.registerNewObjective("Инфекция", "", Component.text(GRAY + "[" + GOLD + "Инфекция" + GRAY + "]"));
 		ob.setDisplaySlot(DisplaySlot.SIDEBAR);
 		ob.getScore(GRAY + "Карта: " + ChatColor.DARK_GREEN + getName())
 		.setScore(9);
@@ -827,7 +860,7 @@ public class Arena {
 	
 	public void endScore(final String name, final boolean zwin) {
 		final Scoreboard sb = smg.getNewScoreboard();
-		final Objective ob = sb.registerNewObjective("Инфекция", "", GRAY + "[" + GOLD + "Инфекция" + GRAY + "]");
+		final Objective ob = sb.registerNewObjective("Инфекция", "", Component.text(GRAY + "[" + GOLD + "Инфекция" + GRAY + "]"));
 		ob.setDisplaySlot(DisplaySlot.SIDEBAR);
 		ob.getScore(GRAY + "Карта: " + ChatColor.DARK_GREEN + getName())
 		.setScore(7);

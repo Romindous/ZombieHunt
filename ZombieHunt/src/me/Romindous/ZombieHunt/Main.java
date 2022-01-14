@@ -1,9 +1,8 @@
 package me.Romindous.ZombieHunt;
 
-
-
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -35,19 +34,22 @@ import me.Romindous.ZombieHunt.Listeners.InventoryLis;
 import me.Romindous.ZombieHunt.Listeners.MainLis;
 import me.Romindous.ZombieHunt.Messages.TitleManager;
 import me.Romindous.ZombieHunt.SQL.SQLGet;
+import net.kyori.adventure.text.Component;
 import net.minecraft.EnumChatFormat;
+import net.minecraft.server.dedicated.DedicatedServer;
 import me.Romindous.ZombieHunt.SQL.MySQL;
 import ru.komiss77.ApiOstrov;
+import ru.komiss77.Ostrov;
 
 public class Main extends JavaPlugin{
 	
 	public static Main plug;
 	public static File folder;
 	public static YamlConfiguration config;
+	public static DedicatedServer ds;
 	public static Location lobby;
 	public static ArrayList<Arena> activearenas = new ArrayList<Arena>();
 	public static LinkedList<String> nonactivearenas = new LinkedList<String>();
-	public static MySQL sql;
 	public static SQLGet data;
 	
 	
@@ -56,6 +58,11 @@ public class Main extends JavaPlugin{
 		getCommand("zh").setExecutor(new ZHCmd(this));
 		getCommand("zkits").setExecutor(new KitsCmd(this));
 		plug = this;
+		try {
+	    	ds = (DedicatedServer) getServer().getClass().getMethod("getServer").invoke(getServer());
+	    } catch (IllegalAccessException|InvocationTargetException|NoSuchMethodException e) {
+	    	e.printStackTrace();
+	    }
 		getServer().getPluginManager().registerEvents(new MainLis(), this);
 		getServer().getPluginManager().registerEvents(new InterractLis(), this);
 		getServer().getPluginManager().registerEvents(new InventoryLis(), this);
@@ -64,29 +71,14 @@ public class Main extends JavaPlugin{
 			w.setGameRule(GameRule.NATURAL_REGENERATION, false);
 		}
 		
-		TitleManager.v = getServer().getClass().getPackage().getName().split("\\.")[3];
-		
 		//конфиг
 		loadConfigs();
 		dataConn();
 	}
 	
 	public static void dataConn() {
-		Bukkit.getScheduler().runTaskTimer(plug, new Runnable() {
-			@Override
-			public void run() {
-				(sql = new MySQL()).connTo();
-			}
-		}, 0, 36000);
-		Bukkit.getScheduler().runTaskLater(plug, new Runnable() {
-			@Override
-			public void run() {
-				if (sql.isConOn()) {
-					Bukkit.getLogger().info("Reconnected to a database! :D");
-					(data = new SQLGet()).mkTbl("pls", "name", "zkit", "pkit", "zkls", "zdths", "pkls", "pdths", "gms", "prm");
-				}
-			}
-		}, 5);
+		Bukkit.getLogger().info("Reconnected to a database! :D");
+		(data = new SQLGet()).mkTbl("pls", "name", "zkit", "pkit", "zkls", "zdths", "pkls", "pdths", "gms", "prm");
 	}
 	
 	public void onDisable() {
@@ -162,17 +154,17 @@ public class Main extends JavaPlugin{
 		p.setGameMode(GameMode.SURVIVAL);
 		ItemStack item = new ItemStack(Material.FERMENTED_SPIDER_EYE);
 		ItemMeta meta = item.getItemMeta();
-		meta.setDisplayName(ChatColor.GOLD + "Выбор Карты");
+		meta.displayName(Component.text(ChatColor.GOLD + "Выбор Карты"));
 		item.setItemMeta(meta);
 		p.getInventory().setItem(0, item);
 		item = new ItemStack(Material.TURTLE_HELMET);
 		meta = item.getItemMeta();
-		meta.setDisplayName(ChatColor.YELLOW + "Наборы для Игры");
+		meta.displayName(Component.text(ChatColor.YELLOW + "Наборы для Игры"));
 		item.setItemMeta(meta);
 		p.getInventory().setItem(4, item);
 		item = new ItemStack(Material.MAGMA_CREAM);
 		meta = item.getItemMeta();
-		meta.setDisplayName(ChatColor.DARK_RED + "Выход в Лобби");
+		meta.displayName(Component.text(ChatColor.DARK_RED + "Выход в Лобби"));
 		item.setItemMeta(meta);
 		p.getInventory().setItem(8, item);
 		p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
@@ -181,36 +173,29 @@ public class Main extends JavaPlugin{
 		p.setFoodLevel(20);
 		p.setHealth(20);
 		final String prm = data.getString(p.getName(), "prm", "pls");
-		p.setPlayerListName(ChatColor.GRAY + "[" + ChatColor.DARK_PURPLE + "ЛОББИ" + ChatColor.GRAY + "] " + p.getName() + (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""));
+		p.playerListName(Component.text("§7[§5ЛОББИ§7] " + p.getName() + (prm.length() > 1 ? " §7(§e" + prm + "§7)" : "")));
 		for (PotionEffect ef : p.getActivePotionEffects()) {
 	        p.removePotionEffect(ef.getType());
 		}
-		
 		TitleManager.sendNmTg(p.getName(), "§7[§5ЛОББИ§7] ", (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""), EnumChatFormat.c);
-        Bukkit.getScheduler().runTaskLater(plug, new Runnable() {
-			@Override
-			public void run() {
-				for (final Player other : Bukkit.getOnlinePlayers()) {
-					final Arena oar = Arena.getPlayerArena(other.getName());
-					if (oar == null || oar.getState() == GameState.LOBBY_WAIT || oar.getState() == GameState.LOBBY_START) {
-						p.showPlayer(plug, other);
-						other.showPlayer(plug, p);
-					} else {
-						p.hidePlayer(plug, other);
-						other.hidePlayer(plug, p);
-					}
-				}
-			}
-		}, 4);
 		if (lobby != null) {
 			p.teleport(lobby);
 		}
 		updateScore(p.getName());
+		Ostrov.sync(() -> {
+			for (final Player pl : Bukkit.getOnlinePlayers()) {
+				final Arena ar = Arena.getPlayerArena(pl.getName());
+				if (ar == null || ar.getState() == GameState.LOBBY_WAIT) {
+					p.showPlayer(plug, pl);
+					pl.showPlayer(plug, p);
+				}
+			}
+		}, 4);
 	}
 	
 	public static void updateScore(final String name) {
 		final Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
-		final Objective ob = sb.registerNewObjective("Инфекция", "", ChatColor.GRAY + "[" + ChatColor.GOLD + "Инфекция" + ChatColor.GRAY + "]");
+		final Objective ob = sb.registerNewObjective("Инфекция", "", Component.text(ChatColor.GRAY + "[" + ChatColor.GOLD + "Инфекция" + ChatColor.GRAY + "]"));
 		ob.setDisplaySlot(DisplaySlot.SIDEBAR);
 		ob.getScore(ChatColor.GRAY + "Карта: " + ChatColor.DARK_GREEN + "Лобби")
 		.setScore(6);
@@ -232,12 +217,12 @@ public class Main extends JavaPlugin{
 		p.getInventory().clear();
 		ItemStack item = new ItemStack(Material.GOLDEN_HELMET);
 		ItemMeta meta = item.getItemMeta();
-		meta.setDisplayName(ChatColor.YELLOW + "Выбор Набора");
+		meta.displayName(Component.text(ChatColor.YELLOW + "Выбор Набора"));
 		item.setItemMeta(meta);
 		p.getInventory().setItem(2, item);
 		item = new ItemStack(Material.SLIME_BALL);
 		meta = item.getItemMeta();
-		meta.setDisplayName(ChatColor.RED + "Выход");
+		meta.displayName(Component.text(ChatColor.RED + "Выход"));
 		item.setItemMeta(meta);
 		p.getInventory().setItem(6, item);
 	}
@@ -254,20 +239,20 @@ public class Main extends JavaPlugin{
 		}
 		ar = null;
 		for (Player pl : Bukkit.getOnlinePlayers()) {
-			pl.setPlayerListFooter(ChatColor.GRAY + "Сейчас в игре: " + ChatColor.GOLD + MainLis.getPlaying() + ChatColor.GRAY + " человек!");
+			pl.sendPlayerListFooter(Component.text(ChatColor.GRAY + "Сейчас в игре: " + ChatColor.GOLD + MainLis.getPlaying() + ChatColor.GRAY + " человек!"));
 		}
 	}
 	
 	public static void crtSbdTm(final Scoreboard sb, final String nm, final String prf, final String val, final String sfx) {
 		final Team tm = sb.registerNewTeam(nm);
 		tm.addEntry(val);
-		tm.setPrefix(prf);
-		tm.setSuffix(sfx);
+		tm.prefix(Component.text(prf));
+		tm.suffix(Component.text(sfx));
 	}
 	
 	public static void chgSbdTm(final Scoreboard sb, final String nm, final String prf, final String sfx) {
 		final Team tm = sb.getTeam(nm);
-		tm.setPrefix(prf);
-		tm.setSuffix(sfx);
+		tm.prefix(Component.text(prf));
+		tm.suffix(Component.text(sfx));
 	}
 }

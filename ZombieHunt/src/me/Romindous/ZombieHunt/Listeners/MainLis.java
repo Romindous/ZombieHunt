@@ -1,5 +1,6 @@
 package me.Romindous.ZombieHunt.Listeners;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -7,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Damageable;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -18,33 +20,52 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+
+import io.papermc.paper.event.player.AsyncChatEvent;
 import me.Romindous.ZombieHunt.Main;
 import me.Romindous.ZombieHunt.Game.Arena;
 import me.Romindous.ZombieHunt.Game.GameState;
+import me.Romindous.ZombieHunt.Messages.TitleManager;
 import me.clip.deluxechat.events.DeluxeChatEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.minecraft.EnumChatFormat;
+import ru.komiss77.ApiOstrov;
 import ru.komiss77.enums.Data;
+import ru.komiss77.enums.Stat;
 import ru.komiss77.events.BungeeDataRecieved;
-import ru.komiss77.modules.player.Oplayer;
 
 public class MainLis implements Listener{
 	
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBungee(final BungeeDataRecieved e) {
+		final Player p = e.getPlayer();
         final String wantArena = e.getOplayer().getDataString(Data.WANT_ARENA_JOIN);
         if (!wantArena.isEmpty()) {
             if (Arena.getNameArena(wantArena) != null && Arena.getNameArena(wantArena).getState() == GameState.LOBBY_WAIT) {
-            	Arena.getNameArena(wantArena).addPl(e.getPlayer().getName());
+            	Arena.getNameArena(wantArena).addPl(p.getName());
             }
         }
         Bukkit.getScheduler().runTaskLater(Main.plug, new Runnable() {
 			@Override
 			public void run() {
-		        Main.data.setString(e.getPlayer().getName(), "prm", getTopGroup(e.getOplayer()), "pls");
+		        Main.data.setString(p.getName(), "prm", getTopGroup(e.getOplayer().getGroups()), "pls");
+				for (final Player other : Bukkit.getOnlinePlayers()) {
+					final Arena oar = Arena.getPlayerArena(other.getName());
+					if (oar == null || oar.getState() == GameState.LOBBY_WAIT || oar.getState() == GameState.LOBBY_START) {
+						final String prm = Main.data.getString(other.getName(), "prm", "pls");
+						TitleManager.sendNmTg(other.getName(), "§7[" + (oar == null ? "§5ЛОББИ" : "§6" + oar.getName()) + "§7] ", (prm.length() > 1 ? " §7(§e" + prm + "§7)" : ""), EnumChatFormat.c);
+						p.showPlayer(Main.plug, other);
+						other.showPlayer(Main.plug, p);
+					} else {
+						p.hidePlayer(Main.plug, other);
+						other.hidePlayer(Main.plug, p);
+					}
+				}
 			}
 		}, 2);
 	}
@@ -54,7 +75,7 @@ public class MainLis implements Listener{
 		final Player p = e.getPlayer();
 		Main.data.chckIfExsts(p.getName(), "pls");
 		Main.lobbyPlayer(p);
-		e.setJoinMessage(Main.pref() + "§6" + p.getName() + " §7зашел на под-сервер!");
+		e.joinMessage(Component.text(Main.pref() + "§6" + p.getName() + " §7зашел на под-сервер!"));
 		final String title;
 		switch (new Random().nextInt(4)) {
 		case 0:
@@ -73,7 +94,8 @@ public class MainLis implements Listener{
 			title = "";
 			break;
 		}
-		p.setPlayerListHeaderFooter("§7<§6Инфекция§7>\n" + title, "§7Сейчас в игре: §6" + getPlaying() + " §7человек!");
+		
+		p.sendPlayerListHeaderAndFooter(Component.text("§7<§6Инфекция§7>\n" + title), Component.text("§7Сейчас в игре: §6" + getPlaying() + " §7человек!"));
 	}
 
 	@EventHandler
@@ -103,7 +125,7 @@ public class MainLis implements Listener{
 	
 	@EventHandler
 	public void onLeave(PlayerQuitEvent e) {
-		e.setQuitMessage(null);
+		e.quitMessage(null);
 		if (Arena.getPlayerArena(e.getPlayer().getName()) != null) {
 			Arena.getPlayerArena(e.getPlayer().getName()).removePl(e.getPlayer().getName());
 		}
@@ -155,6 +177,7 @@ public class MainLis implements Listener{
 							if (ar.isZombie(dmgr.getName()) && !ar.isZombie(p.getName())) {
 								ar.msgEveryone(plDie(p.getName(), dmgr.getName(), true, (byte) Math.round(dmgr.getHealth())));
 								ar.zombifyPl(p);
+								ApiOstrov.addStat(dmgr, Stat.ZH_zklls);
 								ar.addKls('z' + dmgr.getName());
 								cntKll(dmgr.getName(), p.getName(), false);
 								dmgr.playSound(p.getLocation(), Sound.ENTITY_WITHER_BREAK_BLOCK, 20, 1.5f);
@@ -184,6 +207,7 @@ public class MainLis implements Listener{
 							if (ar.isZombie(dmgr.getName()) && !ar.isZombie(p.getName())) {
 								ar.msgEveryone(plDie(p.getName(), dmgr.getName(), true, (byte) Math.round(dmgr.getHealth())));
 								ar.zombifyPl(p);
+								ApiOstrov.addStat(dmgr, Stat.ZH_zklls);
 								ar.addKls('z' + dmgr.getName());
 								cntKll(dmgr.getName(), p.getName(), false);
 								dmgr.playSound(p.getLocation(), Sound.ENTITY_WITHER_BREAK_BLOCK, 20, 1.5f);
@@ -253,59 +277,64 @@ public class MainLis implements Listener{
 	}
 
 	@EventHandler
-	public void onChat(final AsyncPlayerChatEvent e) {
-		if (e.getMessage().startsWith("/")) {
+	public void onChat(final AsyncChatEvent e) {
+		final String m = ((TextComponent) e.message()).content();
+		if (m.startsWith("/")) {
 			return;
 		}
 		final Player send = e.getPlayer();
 		if (Arena.getPlayerArena(send.getName()) == null) {
-			for (final Player rec : e.getRecipients()) {
-	        	if (Arena.getPlayerArena(rec.getName()) != null && Arena.getPlayerArena(rec.getName()).getState() == GameState.RUNNING) {
-	        		e.getRecipients().remove(rec);
+			for (final Audience rec : e.viewers()) {
+	        	if (rec instanceof HumanEntity && Arena.getPlayerArena(((HumanEntity) rec).getName()) != null && Arena.getPlayerArena(((HumanEntity) rec).getName()).getState() == GameState.RUNNING) {
+	        		e.viewers().remove(rec);
 	        	}
 	        }
 			return;
 		} else {
 			final Arena ar = Arena.getPlayerArena(send.getName());
-			if (e.getMessage().startsWith("!") && ar.getState() == GameState.RUNNING) {
-				for (final Player rec : e.getRecipients()) {
-					if (Arena.getPlayerArena(rec.getName()) == null) {
-						continue;
-					} else if (Arena.getPlayerArena(rec.getName()).getName().equalsIgnoreCase(ar.getName())) {
-						sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>') + (ar.isZombie(send.getName()) ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + send.getName() + ChatColor.GRAY + " ≫ " + e.getMessage().replaceFirst("!", ""), rec);
+			if (m.startsWith("!") && ar.getState() == GameState.RUNNING) {
+				for (final Audience rec : e.viewers()) {
+					if (rec instanceof HumanEntity) {
+						if (Arena.getPlayerArena(((HumanEntity) rec).getName()) == null) {
+							continue;
+						} else if (Arena.getPlayerArena(((HumanEntity) rec).getName()).getName().equalsIgnoreCase(ar.getName())) {
+							sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>') + (ar.isZombie(send.getName()) ? ChatColor.DARK_RED : ChatColor.DARK_GREEN) + send.getName() + ChatColor.GRAY + " ≫ " + m.replaceFirst("!", ""), (HumanEntity) rec);
+						}
 					}
 				}
 			} else {
-				for (final Player rec : e.getRecipients()) {
-					if (Arena.getPlayerArena(rec.getName()) == null) {
-						if (ar.getState() != GameState.RUNNING) {
-							sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>') + ChatColor.DARK_GREEN + send.getName() + ChatColor.GRAY + " [" + ChatColor.GOLD + ar.getName() + ChatColor.GRAY + "] ≫ " + e.getMessage(), rec);
+				for (final Audience rec : e.viewers()) {
+					if (rec instanceof HumanEntity) {
+						if (Arena.getPlayerArena(((HumanEntity) rec).getName()) == null) {
+							if (ar.getState() != GameState.RUNNING) {
+								sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>') + ChatColor.DARK_GREEN + send.getName() + ChatColor.GRAY + " [" + ChatColor.GOLD + ar.getName() + ChatColor.GRAY + "] ≫ " + m, (HumanEntity) rec);
+							}
+							continue;
 						}
-						continue;
-					}
-					switch (ar.getState()) {
-					case LOBBY_WAIT:
-					case LOBBY_START:
-					case BEGINING:
-						sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>') + ChatColor.DARK_GREEN + send.getName() + ChatColor.GRAY + " [" + ChatColor.GOLD + ar.getName() + ChatColor.GRAY + "] ≫ " + e.getMessage(), rec);
-						break;
-					case RUNNING:
-						if (Arena.getPlayerArena(rec.getName()).getName().equalsIgnoreCase(ar.getName()) && ar.isZombie(rec.getName()) == ar.isZombie(send.getName())) {
-							sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>').replace(ChatColor.GOLD + "", (ar.isZombie(send.getName()) ? ChatColor.DARK_RED + "" : ChatColor.DARK_GREEN) + "") + ChatColor.GOLD + send.getName() + ChatColor.GRAY + " ≫ " + e.getMessage(), rec);
+						switch (ar.getState()) {
+						case LOBBY_WAIT:
+						case LOBBY_START:
+						case BEGINING:
+							sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>') + ChatColor.DARK_GREEN + send.getName() + ChatColor.GRAY + " [" + ChatColor.GOLD + ar.getName() + ChatColor.GRAY + "] ≫ " + m, (HumanEntity) rec);
+							break;
+						case RUNNING:
+							if (Arena.getPlayerArena(((HumanEntity) rec).getName()).getName().equalsIgnoreCase(ar.getName()) && ar.isZombie(((HumanEntity) rec).getName()) == ar.isZombie(send.getName())) {
+								sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>').replace(ChatColor.GOLD + "", (ar.isZombie(send.getName()) ? ChatColor.DARK_RED + "" : ChatColor.DARK_GREEN) + "") + ChatColor.GOLD + send.getName() + ChatColor.GRAY + " ≫ " + m, (HumanEntity) rec);
+							}
+							break;
+						case END:
+							if (Arena.getPlayerArena(((HumanEntity) rec).getName()).getName().equalsIgnoreCase(ar.getName())) {
+								sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>') + ChatColor.DARK_GREEN + send.getName() + ChatColor.GRAY + " [" + ChatColor.GOLD + ar.getName() + ChatColor.GRAY + "] ≫ " + m, (HumanEntity) rec);
+							}
+							break;
+						default:
+							break;
 						}
-						break;
-					case END:
-						if (Arena.getPlayerArena(rec.getName()).getName().equalsIgnoreCase(ar.getName())) {
-							sendSpigotMsg(Main.pref().replace('[', '<').replace(']', '>') + ChatColor.DARK_GREEN + send.getName() + ChatColor.GRAY + " [" + ChatColor.GOLD + ar.getName() + ChatColor.GRAY + "] ≫ " + e.getMessage(), rec);
-						}
-						break;
-					default:
-						break;
 					}
 		        }
 			}
 		}
-        e.getRecipients().clear();
+        e.viewers().clear();
     }
 	
 	@EventHandler
@@ -366,22 +395,23 @@ public class MainLis implements Listener{
 		}
 	}
 	
-	public static void sendSpigotMsg(String msg, Player p) {
-		p.spigot().sendMessage(new TextComponent(msg));
+	@SuppressWarnings("deprecation")
+	public static void sendSpigotMsg(final String msg, final HumanEntity p) {
+		p.spigot().sendMessage(new net.md_5.bungee.api.chat.TextComponent(msg));
 	}
 
-	public static String getTopGroup(final Oplayer op) {
-		if (op.groups.contains("xpanitely")) {
+	public static String getTopGroup(final Collection<String> grps) {
+		if (grps.contains("xpanitely")) {
 			return "Хранитель";
-		} else if (op.groups.contains("builder")) {
+		} else if (grps.contains("builder")) {
 			return "Строитель";
-		} else if (op.groups.contains("supermoder")) {
+		} else if (grps.contains("supermoder")) {
 			return "Архангел";
-		} else if (op.groups.contains("moder-spy")) {
+		} else if (grps.contains("moder-spy")) {
 			return "Ангел";
-		} else if (op.groups.contains("moder")) {
+		} else if (grps.contains("moder")) {
 			return "Модератор";
-		} else if (op.groups.contains("mchat")) {
+		} else if (grps.contains("mchat")) {
 			return "Чат-Модер";
 		} else {
 			return "N";
