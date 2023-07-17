@@ -182,7 +182,7 @@ public class Main extends JavaPlugin{
 	
 	public static void updateScore(final String name) {
 		final Scoreboard sb = Bukkit.getScoreboardManager().getNewScoreboard();
-		final Objective ob = sb.registerNewObjective("Инфекция", Criteria.DUMMY, Component.text("§7[§6 + Инфекция" + "§7]"));
+		final Objective ob = sb.registerNewObjective("Инфекция", Criteria.DUMMY, Component.text("§7[§6Инфекция§7]"));
 		ob.setDisplaySlot(DisplaySlot.SIDEBAR);
 		ob.getScore("§7Карта: " + "§aЛобби")
 		.setScore(6);
@@ -195,7 +195,7 @@ public class Main extends JavaPlugin{
 		ob.getScore("§4Зомби: ").setScore(2);
 		ob.getScore(" ").setScore(1);
 		
-		ob.getScore("§e     ostrov77.su")
+		ob.getScore("§e     ostrov77.ru")
 		.setScore(0);
 		Bukkit.getPlayer(name).setScoreboard(sb);
 	}

@@ -759,7 +759,7 @@ public class Arena {
 		ob.getScore("§4Зомби: ").setScore(2);
 		ob.getScore(" ").setScore(1);
 		
-		ob.getScore("§e     ostrov77.su")
+		ob.getScore("§e     ostrov77.ru")
 		.setScore(0);
 		Bukkit.getPlayer(name).setScoreboard(sb);
 	}
@@ -785,7 +785,7 @@ public class Arena {
 		ob.getScore("§4Зомби: ").setScore(2);
 		ob.getScore(" ").setScore(1);
 		
-		ob.getScore("§e     ostrov77.su")
+		ob.getScore("§e     ostrov77.ru")
 		.setScore(0);
 		Bukkit.getPlayer(name).setScoreboard(sb);
 	}
@@ -811,7 +811,7 @@ public class Arena {
 		ob.getScore("§4Зомби: ").setScore(2);
 		ob.getScore(" ").setScore(1);
 		
-		ob.getScore("§e     ostrov77.su")
+		ob.getScore("§e     ostrov77.ru")
 		.setScore(0);
 		Bukkit.getPlayer(name).setScoreboard(sb);
 	}
@@ -849,7 +849,7 @@ public class Arena {
 		}
 		ob.getScore(" ").setScore(1);
 		
-		ob.getScore("§e     ostrov77.su")
+		ob.getScore("§e     ostrov77.ru")
 		.setScore(0);
 		Bukkit.getPlayer(name).setScoreboard(sb);
 	}
