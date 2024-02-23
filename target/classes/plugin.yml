@@ -1,0 +1,11 @@
+name: ZombieHunt
+version: '${project.version}'
+main: ru.romindous.zh.Main
+api-version: '1.20'
+author: Romindous
+
+commands:
+  zh:
+    description: The command for ZombieHunt
+  zkits:
+    description: The command for ZombieHunt
