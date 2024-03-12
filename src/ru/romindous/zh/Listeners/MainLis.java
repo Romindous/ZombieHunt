@@ -1,6 +1,5 @@
 package ru.romindous.zh.Listeners;
 
-import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Sound;
@@ -20,11 +19,12 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import ru.komiss77.ApiOstrov;
 import ru.komiss77.Ostrov;
+import ru.komiss77.Perm;
 import ru.komiss77.enums.Data;
 import ru.komiss77.enums.Stat;
-import ru.komiss77.events.BungeeDataRecieved;
 import ru.komiss77.events.ChatPrepareEvent;
 import ru.komiss77.events.LocalDataLoadEvent;
+import ru.komiss77.listener.ChatLst;
 import ru.komiss77.modules.player.PM;
 import ru.komiss77.utils.TCUtils;
 import ru.romindous.zh.Game.Arena;
@@ -34,24 +34,32 @@ import ru.romindous.zh.PlHunter;
 
 import java.util.Collection;
 
-public class MainLis implements Listener{
-	
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onBungee(final BungeeDataRecieved e) {
-		final Player p = e.getPlayer();
-        final String wantArena = e.getOplayer().getDataString(Data.WANT_ARENA_JOIN);
-        if (!wantArena.isEmpty()) {
-			final Arena ar = Arena.getPlayerArena(p);
-            if (ar != null && ar.getState() == GameState.WAITING) {
-            	ar.addPl(p);
-            }
-        }
-	}
+public class MainLis implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onJoin(final LocalDataLoadEvent e) {
 		final Player p = e.getPlayer();
-		Main.lobbyPlayer(p, PM.getOplayer(p, PlHunter.class));
+		Main.lobbyPlayer(p, (PlHunter) e.getOplayer());
+		p.sendPlayerListHeader(TCUtils.format(Main.PRFX
+			+ "\n" + switch (Ostrov.random.nextInt(4)) {
+			case 0 -> "Добро пожаловать!";
+			case 1 -> "Приятной игры!";
+			case 2 -> "Желаем удачи!";
+			case 3 -> "Развлекайтесь!";
+			default -> "";
+		}));
+
+		final String wantArena = e.getOplayer().getDataString(Data.WANT_ARENA_JOIN);
+		if (!wantArena.isEmpty()) {
+			final Arena ta = Main.activearenas.get(wantArena);
+			final Arena ar = ta == null ? Main.plug.createArena(wantArena) : ta;
+			if (ar == null) return;
+			switch (ar.getState()) {
+				case WAITING, LOBBY_START, BEGINING -> ar.addPl(p);
+				case RUNNING -> ar.addSpec(p);
+				case END -> {}
+			}
+		}
     }
 
 	@EventHandler
@@ -174,7 +182,8 @@ public class MainLis implements Listener{
 				break;
 			}
 		} else if (e.getEntity() instanceof LivingEntity && ((Damageable) e.getEntity()).getHealth() - e.getFinalDamage() < 0.1) {
-			e.getEntity().getWorld().playSound(e.getEntity().getLocation(), Sound.valueOf("ENTITY_" + e.getEntityType().toString() + "_DEATH"), 0.25f, 1);
+			e.getEntity().getWorld().playSound(e.getEntity().getLocation(),
+				Sound.valueOf("ENTITY_" + e.getEntityType().toString() + "_DEATH"), 0.25f, 1);
 			e.setCancelled(true);
 			e.getEntity().remove();
 		}
@@ -185,57 +194,37 @@ public class MainLis implements Listener{
 		final Player p = e.getPlayer();
 		final PlHunter ph = PM.getOplayer(p, PlHunter.class);
 		final Arena ar = ph.arena();
-		e.showLocal(false);
+		final String msg = Perm.canColorChat(e.getOplayer())
+			? e.getMessage().replace('&', '§') : e.getMessage();
+		e.showLocal(true);
+		e.showSelf(false);
 		if (ar == null) {
-			final Component c = TCUtils.format(Main.bfr('{', TCUtils.P + ApiOstrov.toSigFigs(
-				(float) ph.getStat(Stat.ZH_zklls) / (float) ph.getStat(Stat.ZH_pdths), (byte) 2), '}'));
-			e.setSenderGameInfo(c);
-			e.setViewerGameInfo(c);
-		} else {
-			switch (ar.getState()) {
-				case WAITING, LOBBY_START:
-					final Component c = TCUtils.format(Main.bfr('[', TCUtils.P + ar.getName(), ']'));
-					e.setSenderGameInfo(c);
-					e.setViewerGameInfo(c);
-					break;
-				default:
-					e.sendProxy(false);
-					break;
-			}
-		}
-	}
-
-	@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false)
-	public void onAChat(final AsyncChatEvent e) {
-		final Player snd = e.getPlayer();
-		final PlHunter ph = PM.getOplayer(snd, PlHunter.class);
-		final Arena ar = ph.arena();
-		final String msg = TCUtils.toString(e.message());
-		//если на арене
-		final String knd = Main.bfr('{', TCUtils.P + ApiOstrov.toSigFigs(
-			(float) ph.getStat(Stat.ZH_zklls) / (float) ph.getStat(Stat.ZH_pdths), (byte) 2), '}');
-		final Component modMsg;
-		if (ar == null) {
-			modMsg = TCUtils.format(knd + snd.getName() + Main.afr('[', TCUtils.A + "ЛОББИ", ']') + " §7§o≫ " + TCUtils.N + msg);
+			final Component modMsg = TCUtils.format(Main.bfr('{', TCUtils.P + ApiOstrov.toSigFigs(
+				(float) ph.getStat(Stat.ZH_zklls) / (float) ph.getStat(Stat.ZH_pdths), (byte) 2), '}')
+				+ ChatLst.NIK_COLOR + p.getName() + Main.afr('[', TCUtils.A + "ЛОББИ", ']') + " §7§o≫ " + TCUtils.N + msg);
 			for (final Audience au : e.viewers()) {
 				au.sendMessage(modMsg);
 			}
+			p.sendMessage(modMsg);
 		} else {
+			e.sendProxy(false);
+			final Component modMsg;
 			switch (ar.getState()) {
 			case LOBBY_START:
 			case WAITING:
-				modMsg = TCUtils.format(knd + snd.getName() + Main.afr('[', TCUtils.P + ar.getName(), ']') + " §7§o≫ " + TCUtils.N + msg);
+				modMsg = TCUtils.format(ChatLst.NIK_COLOR + p.getName()
+					+ Main.afr('[', TCUtils.P + ar.getName(), ']') + " §7§o≫ " + TCUtils.N + msg);
 				for (final Audience au : e.viewers()) {
 					au.sendMessage(modMsg);
 				}
+				p.sendMessage(modMsg);
 				break;
 			case BEGINING:
 			case RUNNING:
 			case END:
 				if (msg.length() > 1 && msg.charAt(0) == '!') {
-					modMsg = TCUtils.format(TCUtils.N + "[Всем] "
-						+ (ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
-						snd.getName() + " §7§o≫ " + TCUtils.N + msg.substring(1));
+					modMsg = TCUtils.format(TCUtils.N + "[Всем] " + (ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
+						p.getName() + " §7§o≫ " + TCUtils.N + msg.substring(1));
 					for (final PlHunter ors : ar.getPls()) {
 						final Player pl = ors.getPlayer();
 						pl.sendMessage(modMsg);
@@ -248,7 +237,7 @@ public class MainLis implements Listener{
 					}
 				} else {
 					modMsg = TCUtils.format((ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
-						snd.getName() + " §7§o≫ " + TCUtils.N + msg);
+						p.getName() + " §7§o≫ " + TCUtils.N + msg);
 					for (final PlHunter ors : ar.getPls()) {
 						if (ors.zombie() == ph.zombie()) {
 							final Player pl = ors.getPlayer();

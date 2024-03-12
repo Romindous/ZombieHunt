@@ -112,7 +112,7 @@ public class Main extends JavaPlugin{
 					Integer.parseInt(ars.getString("arenas." + name + ".spawns.y").split(":")[i]), 
 					Integer.parseInt(ars.getString("arenas." + name + ".spawns.z").split(":")[i]));
 		}
-		return new Arena(name, ars.getInt("arenas." + name + ".min"), ars.getInt("arenas." + name + ".max"), spawns, this);
+		return new Arena(name, ars.getInt("arenas." + name + ".min"), ars.getInt("arenas." + name + ".max"), spawns);
 	}
 	
 	public static void lobbyPlayer(final Player p, final PlHunter ph) {
@@ -142,8 +142,8 @@ public class Main extends JavaPlugin{
 		for (final Player op : Bukkit.getOnlinePlayers()) {
 			if (p.getEntityId() == op.getEntityId()) continue;
 			p.showPlayer(plug, op);
-			final PlHunter plh = PM.getOplayer(op, PlHunter.class);
-			if (plh.arena() == null || plh.arena().getState() == GameState.WAITING) {
+			final Arena ar = Arena.getPlayerArena(op);
+			if (ar == null || ar.getState() == GameState.WAITING) {
 				op.showPlayer(plug, p);
 			} else {
 				op.hidePlayer(plug, p);

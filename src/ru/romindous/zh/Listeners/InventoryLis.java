@@ -72,7 +72,7 @@ public class InventoryLis implements Listener{
 				meta.displayName(TCUtils.format("§4Обратно в лобби"));
 				item.setItemMeta(meta);
 				p.getInventory().setItem(8, item);
-				Arena.getNameArena(nm.substring(2)).addSpec(p);
+				Arena.getNameArena(nm).addSpec(p);
 				break;	
 			default:
 				break;

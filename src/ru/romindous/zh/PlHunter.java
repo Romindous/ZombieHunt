@@ -14,8 +14,6 @@ public class PlHunter extends Oplayer {
     private boolean orgZomb = false;
     private boolean zombie = false;
 
-    private static final String SKIT = "skit", ZKIT = "zkit";
-
     public PlHunter(final HumanEntity p) {
         super(p);
     }
@@ -39,22 +37,22 @@ public class PlHunter extends Oplayer {
     }
 
     public void survKit(final String kit) {
-        mysqlData.put(SKIT, kit);
+        mysqlData.put(Arena.SKIT, kit);
         score.getSideBar().update(Arena.SKIT, Arena.SURV_CLR + "Игрока: " + TCUtils.P + kit);
     }
     public String survKit() {
         final String def = KitsCmd.firstOf("kits.player");
-        final String data = mysqlData.get(SKIT);
+        final String data = mysqlData.get(Arena.SKIT);
         return data == null || data.isEmpty() ? def : data;
     }
 
     public void zombKit(final String kit) {
-        mysqlData.put(ZKIT, kit);
+        mysqlData.put(Arena.ZKIT, kit);
         score.getSideBar().update(Arena.ZKIT, Arena.ZOMB_CLR + "Зомби: " + TCUtils.P + kit);
     }
     public String zombKit() {
         final String def = KitsCmd.firstOf("kits.zombie");
-        final String data = mysqlData.get(ZKIT);
+        final String data = mysqlData.get(Arena.ZKIT);
         return data == null || data.isEmpty() ? def : data;
     }
 

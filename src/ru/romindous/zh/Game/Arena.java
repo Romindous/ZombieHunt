@@ -5,6 +5,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -37,17 +38,15 @@ public class Arena {
 	private final HashMap<String, PlHunter> pls;
 	private final Location[] spawns;
 	private BukkitTask task;
-	private final Main plug;
 
 	public static final String SURV_CLR = "§a", ZOMB_CLR = "§c", ZKIT = "zkit", SKIT = "skit", AMT = "amt", LIMIT = "rem", ZOMB = "zbs";
 	private static final PlHunter[] eps = new PlHunter[0];
 	
-	public Arena(final String name, final int min, final int max, final Location[] spawns, final Main plug) {
+	public Arena(final String name, final int min, final int max, final Location[] spawns) {
 		this.max = max;
 		this.min = min;
 		this.name = name;
 		this.spawns = spawns;
-		this.plug = plug;
 		this.spcs = new HashMap<>();
 		this.pls = new HashMap<>();
 		this.state = GameState.WAITING;
@@ -147,7 +146,11 @@ public class Arena {
 			}
 			break;
 		case RUNNING:
+			ph.addStat(Stat.ZH_loose, 1);
 			p.sendMessage(Main.PRFX + TCUtils.N + "Ты больше не на карте " + TCUtils.A + getName());
+			for (final PlHunter plh : spcs.values()) {
+				plh.getPlayer().sendMessage(Main.PRFX + TCUtils.P + p.getName() + TCUtils.N + " вышел из игры");
+			}
 			if (ph.zombie()) {
 				final int amt = getPlAmount(true);
 				if (amt == 0) {
@@ -208,38 +211,40 @@ public class Arena {
 				for (final Player pl : Bukkit.getOnlinePlayers()) {
 					final Arena oar = getPlayerArena(pl);
 					if (oar == null || oar.getState() == GameState.WAITING) {
-						p.hidePlayer(plug, pl);
+						p.hidePlayer(Main.plug, pl);
 					}
 				}
 				break;
-			case RUNNING, END:
-				p.sendMessage(Main.PRFX + "§cНа карте " + TCUtils.P + getName() + " §cуже идет игра!");
+			case RUNNING:
 				addSpec(p);
+			case END:
+				p.sendMessage(Main.PRFX + "§cНа карте " + TCUtils.P + getName() + " §cуже идет игра!");
 				return;
             }
 			ph.arena(this);
 			pls.put(p.getName(), ph);
 			final String prm = ph.getTopPerm();
-			ph.taq(Main.bfr('[', TCUtils.A + getName(), ']'), TCUtils.P,
+			ph.taq(Main.bfr('[', TCUtils.P + getName(), ']'), TCUtils.P,
 				(prm.isEmpty() ? "" : Main.afr('(', "§e" + prm, ')')));
 			for (final PlHunter plh : pls.values()) {
 				final Player pl = plh.getPlayer();
 				ApiOstrov.sendActionBarDirect(pl, amtToHB());
 				pl.sendMessage(Main.PRFX + TCUtils.P + p.getName() + TCUtils.N + " зашел на карту!");
-				plh.score.getSideBar().update(AMT, TCUtils.N + "Игроков: " + TCUtils.P + pls.size() + " чел.")
-					.update(LIMIT, TCUtils.N + "Нужно еще " + TCUtils.A + (min - pls.size()) + " чел.");
+				if (getState() == GameState.WAITING) {
+					plh.score.getSideBar().update(AMT, TCUtils.N + "Игроков: " + TCUtils.P + pls.size() + " чел.")
+						.update(LIMIT, TCUtils.N + "Нужно еще " + TCUtils.A + (min - pls.size()) + " чел.");
+				} else {
+					plh.score.getSideBar().update(AMT, TCUtils.N + "Игроков: " + TCUtils.P + pls.size() + " чел.");
+				}
 			}
 			p.getInventory().clear();
 			p.getInventory().setItem(2, new ItemBuilder(Material.GOLDEN_HELMET).name("§eВыбор Набора").build());
 			p.getInventory().setItem(6, new ItemBuilder(Material.SLIME_BALL).name("§cВыход").build());
-			if (pls.size() == min) {
-				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, TCUtils.N + "[§6Инфекция§7]", "§6Скоро старт!", " ", TCUtils.N + "Игроков: §6" + pls.size() + TCUtils.N + "/§6" + max, "", pls.size());
-				countBegining();
-			} else if (pls.size() < min) {
+			if (pls.size() < min) {
 				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, TCUtils.N + "[§6Инфекция§7]", "§2Ожидание", " ", TCUtils.N + "Игроков: §2" + pls.size() + TCUtils.N + "/§2" + min, "", pls.size());
-				for (final PlHunter plh : pls.values()) {
-					plh.score.getSideBar().update(AMT, TCUtils.N + "Игроков: " + TCUtils.P + pls.size() + " чел.");
-				}
+			} else {
+				if (pls.size() == min) countBegining();
+				ApiOstrov.sendArenaData(this.name, ru.komiss77.enums.GameState.СТАРТ, TCUtils.N + "[§6Инфекция§7]", "§6Скоро старт!", " ", TCUtils.N + "Игроков: §6" + pls.size() + TCUtils.N + "/§6" + max, "", pls.size());
 			}
 		} else {
 			p.sendMessage(Main.PRFX + "§c" + "Карта §6" + getName() + "§c" + " заполнена!");
@@ -255,7 +260,7 @@ public class Arena {
 		for (Player pl : Bukkit.getOnlinePlayers()) {
 			final Arena oar = getPlayerArena(pl);
 			if (oar == null || oar.getState() == GameState.WAITING) {
-				p.hidePlayer(plug, pl);
+				p.hidePlayer(Main.plug, pl);
 			}
 		}
 	}
@@ -267,52 +272,6 @@ public class Arena {
 		Main.lobbyPlayer(p, ph);
 	}
 	
-	//отсчет в лобби
-	/*public void countLobby() {
-		for (final PlHunter plh : pls.values()) {
-			lobbyScore(plh);
-		}
-		state = GameState.LOBBY_START;
-		time = 20;
-		task = new BukkitRunnable() {
-			
-			@Override
-			public void run() {
-				final String rmn = TCUtils.N + "До начала: " + TCUtils.P + time + " сек.";
-				for (final PlHunter plh : pls.values()) {
-					plh.score.getSideBar().update(LIMIT, rmn);
-				}
-				switch (time) {
-				case 20:
-				case 10:
-				case 5:
-					for (final PlHunter plh : pls.values()) {
-						final Player pl = plh.getPlayer();
-						pl.playSound(pl.getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
-						ApiOstrov.sendActionBarDirect(pl, "§6До начала осталось §d" + time + " §6секунд!");
-					}
-					break;
-				case 4:
-				case 3:
-				case 2:
-				case 1:
-					for (final PlHunter plh : pls.values()) {
-						final Player pl = plh.getPlayer();
-						pl.playSound(pl.getLocation(), Sound.BLOCK_DISPENSER_FAIL, 0.8f, 1.2f);
-					}
-					break;
-				case 0:
-					task.cancel();
-					countBegining();
-					break;
-				default:
-					break;
-				}
-				time--;
-			}
-		}.runTaskTimer(plug, 0, 20);
-	}*/
-	
 	//отсчет в игре
 	public void countBegining() {
 		state = GameState.BEGINING;
@@ -322,7 +281,7 @@ public class Arena {
 			for (Player pl : Bukkit.getOnlinePlayers()) {
 				final Arena oar = getPlayerArena(pl);
 				if (oar == null || oar.getState() == GameState.WAITING) {
-					p.hidePlayer(plug, pl);
+					p.hidePlayer(Main.plug, pl);
 				}
 			}
 			p.teleport(getRandSpawn());
@@ -376,7 +335,7 @@ public class Arena {
 				}
 				time--;
 			}
-		}.runTaskTimer(plug, 0, 20);
+		}.runTaskTimer(Main.plug, 0, 20);
 	}
 
 	public void countGame() {
@@ -394,12 +353,12 @@ public class Arena {
 			giveKit(pl, plh);
 			runnScore(plh);
 			if (plh.zombie()) {
-				plh.taq(Main.bfr('[', TCUtils.A + getName(), ']'), ZOMB_CLR, "");
+				plh.taq(Main.bfr('[', TCUtils.P + getName(), ']'), ZOMB_CLR, "");
 				pl.playSound(pl.getLocation(), Sound.ENTITY_ZOMBIE_AMBIENT, 20, 1);
 				ApiOstrov.sendTitleDirect(pl, TCUtils.A + "Ты -" + ZOMB_CLR + "Зомби",
 					TCUtils.P + "Убей всех игроков за " + TCUtils.A + (time / 60) + TCUtils.P + " минут!", 8, 40, 20);
 			} else {
-				plh.taq(Main.bfr('[', TCUtils.A + getName(), ']'), SURV_CLR, "");
+				plh.taq(Main.bfr('[', TCUtils.P + getName(), ']'), SURV_CLR, "");
 				pl.playSound(pl.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 20, 1);
 				ApiOstrov.sendTitleDirect(pl, TCUtils.A + "Ты - " + SURV_CLR + "Игрок",
 					TCUtils.P + "Выживи на протяжении " + TCUtils.A + (time / 60) + TCUtils.P + " минут!", 8, 40, 20);
@@ -473,7 +432,7 @@ public class Arena {
 				}
 				time--;
 			}
-		}.runTaskTimer(plug, 0, 20);
+		}.runTaskTimer(Main.plug, 0, 20);
 	}
 	
 	public void countEnd(final boolean zwin) {
@@ -483,15 +442,13 @@ public class Arena {
 			for (final PlHunter plh : pls.values()) {
 				endScore(plh, true);
 				plh.addStat(Stat.ZH_game, 1);
-				if (!plh.orgZomb()) continue;
-				plh.addStat(Stat.ZH_win, 1);
+				plh.addStat(plh.orgZomb() ? Stat.ZH_win : Stat.ZH_loose, 1);
 			}
 		} else {
 			for (final PlHunter plh : pls.values()) {
 				endScore(plh, false);
 				plh.addStat(Stat.ZH_game, 1);
-				if (plh.orgZomb()) continue;
-				plh.addStat(Stat.ZH_win, 1);
+				plh.addStat(plh.zombie() ? Stat.ZH_loose : Stat.ZH_win, 1);
 			}
 		}
 
@@ -520,12 +477,12 @@ public class Arena {
 				}
 				time--;
 			}
-		}.runTaskTimer(plug, 0, 20);
+		}.runTaskTimer(Main.plug, 0, 20);
 	}
 	
 	public void zombifyPl(final Player p, final PlHunter ph) {
 		p.playSound(p.getLocation(), Sound.ENTITY_ZOMBIE_AMBIENT, 2, 1);
-		ph.taq(Main.bfr('[', TCUtils.A + getName(), ']'), ZOMB_CLR, "");
+		ph.taq(Main.bfr('[', TCUtils.P + getName(), ']'), ZOMB_CLR, "");
 		ph.zombie(true);
 		p.closeInventory();
 		p.setFireTicks(0);
@@ -536,7 +493,6 @@ public class Arena {
 		giveKit(p, ph);
 		msgEveryone(Main.PRFX + "§c" + p.getName() + TCUtils.N + " превратился в Зомби!");
 		ApiOstrov.addStat(p, Stat.ZH_pdths);
-		ApiOstrov.addStat(p, Stat.ZH_loose);
 		if (getPlAmount(false) == 0) {
 			if (task != null) task.cancel();
 			for (final PlHunter plh : pls.values()) {
@@ -559,13 +515,13 @@ public class Arena {
 	//сколько игроков из скольки
 	public String amtToHB() {
 		return pls.size() < min ? 
-			"§aНа карте §6" + pls.size() + "§a игроков, нужно еще §6" + (min - pls.size()) + "§a для начала" 
-			: 
-			"§aНа карте §6" + pls.size() + "§a игроков, максимум: §6" + max;
+			TCUtils.P + "На карте " + TCUtils.A + pls.size() + TCUtils.P + " игроков, нужно еще "
+				+ TCUtils.A + (min - pls.size()) + TCUtils.P + " для начала" :
+			TCUtils.P + "На карте " + TCUtils.A + pls.size() + TCUtils.P + " игроков, максимум: " + TCUtils.A + max;
 	}
 	
 	//в игре ли игрок?
-	public static Arena getPlayerArena(final Player pl) {
+	public static Arena getPlayerArena(final HumanEntity pl) {
 		return PM.getOplayer(pl, PlHunter.class).arena();
 	}
 	
@@ -611,7 +567,7 @@ public class Arena {
 	public void waitScore(final PlHunter ph) {
 		ph.score.getSideBar().reset().title(Main.PRFX)
 			.add(" ")
-			.add(TCUtils.N + "Карта: " + TCUtils.A + getName())
+			.add(TCUtils.N + "Карта: " + TCUtils.P + getName())
 			.add(TCUtils.A + "=-=-=-=-=-=-=-")
 			.add(TCUtils.N + "Набор для")
 			.add(SKIT, SURV_CLR + "Игрока: " + TCUtils.P + ph.survKit())
@@ -624,26 +580,10 @@ public class Arena {
 			.add("§e     ostrov77.ru").build();
 	}
 	
-	/*public void lobbyScore(final PlHunter ph) {
-		ph.score.getSideBar().reset().title(Main.PRFX)
-			.add(" ")
-			.add(TCUtils.N + "Карта: " + TCUtils.P + getName())
-			.add(TCUtils.A + "=-=-=-=-=-=-=-")
-			.add(TCUtils.N + "Набор для")
-			.add(SKIT, SURV_CLR + "Игрока: " + TCUtils.P + ph.survKit())
-			.add(ZKIT, ZOMB_CLR + "Зомби: " + TCUtils.P + ph.zombKit())
-			.add(" ")
-			.add(AMT, TCUtils.N + "Игроков: " + TCUtils.P + pls.size() + " чел.")
-			.add(TCUtils.A + "=-=-=-=-=-=-=-")
-			.add(LIMIT, TCUtils.N + "До начала: " + TCUtils.P + time + " сек.")
-			.add(" ")
-			.add("§e     ostrov77.ru").build();
-	}*/
-	
 	public void beginScore(final PlHunter ph) {
 		ph.score.getSideBar().reset().title(Main.PRFX)
 			.add(" ")
-			.add(TCUtils.N + "Карта: " + TCUtils.A + getName())
+			.add(TCUtils.N + "Карта: " + TCUtils.P + getName())
 			.add(TCUtils.A + "=-=-=-=-=-=-=-")
 			.add(TCUtils.N + "Набор для")
 			.add(SKIT, SURV_CLR + "Игрока: " + TCUtils.P + ph.survKit())
@@ -660,7 +600,7 @@ public class Arena {
 		final int zbs = getPlAmount(true);
 		ph.score.getSideBar().reset().title(Main.PRFX)
 			.add(" ")
-			.add(TCUtils.N + "Карта: " + TCUtils.A + getName())
+			.add(TCUtils.N + "Карта: " + TCUtils.P + getName())
 			.add(TCUtils.A + "=-=-=-=-=-=-=-")
 			.add(" ")
 			.add(TCUtils.N + "Роль: " + (ph.zombie() ? ZOMB_CLR + "Зомби" : SURV_CLR + "Игрок"))
@@ -679,7 +619,7 @@ public class Arena {
 	public void endScore(final PlHunter ph, final boolean zwin) {
 		ph.score.getSideBar().reset().title(Main.PRFX)
 			.add(" ")
-			.add(TCUtils.N + "Карта: " + TCUtils.A + getName())
+			.add(TCUtils.N + "Карта: " + TCUtils.P + getName())
 			.add(TCUtils.A + "=-=-=-=-=-=-=-")
 			.add(TCUtils.N + "Поздравляем!")
 			.add(TCUtils.N + "Выиграли: " + (zwin ? ZOMB_CLR + "Зомби" : SURV_CLR + "Игроки"))
