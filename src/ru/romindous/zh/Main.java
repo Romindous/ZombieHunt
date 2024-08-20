@@ -1,18 +1,25 @@
 package ru.romindous.zh;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
-import ru.komiss77.ApiOstrov;
+import ru.komiss77.enums.Game;
 import ru.komiss77.enums.Stat;
+import ru.komiss77.modules.games.GM;
 import ru.komiss77.modules.player.PM;
 import ru.komiss77.modules.world.WXYZ;
 import ru.komiss77.utils.ItemBuilder;
-import ru.komiss77.utils.TCUtils;
+import ru.komiss77.utils.StringUtil;
+import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Commands.KitsCmd;
 import ru.romindous.zh.Commands.ZHCmd;
 import ru.romindous.zh.Game.Arena;
@@ -20,11 +27,6 @@ import ru.romindous.zh.Game.GameState;
 import ru.romindous.zh.Listeners.InterractLis;
 import ru.romindous.zh.Listeners.InventoryLis;
 import ru.romindous.zh.Listeners.MainLis;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Main extends JavaPlugin{
 
@@ -39,11 +41,11 @@ public class Main extends JavaPlugin{
     public void onEnable() {
 		//Ostrov things
 		PM.setOplayerFun(p -> new PlHunter(p), true);
-		TCUtils.N = "§7";
-		TCUtils.P = "§2";
-		TCUtils.A = "§4";
+		TCUtil.N = "§7";
+		TCUtil.P = "§2";
+		TCUtil.A = "§4";
 
-		PRFX = TCUtils.A + "[" + TCUtils.P + "Инфекция" + TCUtils.A + "] " + TCUtils.N;
+		PRFX = TCUtil.A + "[" + TCUtil.P + "Инфекция" + TCUtil.A + "] " + TCUtil.N;
 		plug = this;
 
 		getServer().getConsoleSender().sendMessage("§2ZombieHunt is ready!");
@@ -89,7 +91,7 @@ public class Main extends JavaPlugin{
 				for(final String s : ars.getConfigurationSection("arenas").getKeys(false)) {
 					if (ars.contains("arenas." + s + ".fin")) {
 						nonactivearenas.add(s);
-						ApiOstrov.sendArenaData(s, ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §20§7/§2" + ars.get("arenas." + s + ".min"), "", 0);
+						GM.sendArenaData(Game.ZH, s, ru.komiss77.enums.GameState.ОЖИДАНИЕ, 0, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §20§7/§2" + ars.get("arenas." + s + ".min"));
 					}
 				}
 			}
@@ -122,9 +124,9 @@ public class Main extends JavaPlugin{
 		ph.orgZomb(false);
 		p.getInventory().clear();
 		p.setGameMode(GameMode.SURVIVAL);
-		p.getInventory().setItem(0, new ItemBuilder(Material.FERMENTED_SPIDER_EYE).name("§6Выбор Карты").build());
-		p.getInventory().setItem(4, new ItemBuilder(Material.TURTLE_HELMET).name("§eНаборы для Игры").build());
-		p.getInventory().setItem(8, new ItemBuilder(Material.MAGMA_CREAM).name("§4Выход в Лобби").build());
+		p.getInventory().setItem(0, new ItemBuilder(ItemType.FERMENTED_SPIDER_EYE).name("§6Выбор Карты").build());
+		p.getInventory().setItem(4, new ItemBuilder(ItemType.TURTLE_HELMET).name("§eНаборы для Игры").build());
+		p.getInventory().setItem(8, new ItemBuilder(ItemType.MAGMA_CREAM).name("§4Выход в Лобби").build());
 		p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
 		p.setExp(0);
 		p.setLevel(0);
@@ -134,8 +136,8 @@ public class Main extends JavaPlugin{
 	        p.removePotionEffect(ef.getType());
 		}
 		final String prm = ph.getTopPerm();
-		ph.taq(bfr('[', TCUtils.A + "ЛОББИ", ']'),
-			TCUtils.P, (prm.isEmpty() ? "" : afr('(', "§e" + prm, ')')));
+		ph.taq(bfr('[', TCUtil.A + "ЛОББИ", ']'),
+			TCUtil.P, (prm.isEmpty() ? "" : afr('(', "§e" + prm, ')')));
 		if (lobby != null) p.teleport(lobby.getCenterLoc());
 		updateScore(ph);
 		inGameCnt();
@@ -154,29 +156,30 @@ public class Main extends JavaPlugin{
 	public static void inGameCnt() {
 		int i = 0;
 		for (final Arena ar : Main.activearenas.values()) i+=ar.getPlAmount(null);
-		final Component c = TCUtils.format(TCUtils.N + "Сейчас в игре: " + TCUtils.P + i + TCUtils.N + " человек!");
+		final Component c = TCUtil.form(TCUtil.N + "Сейчас в игре: " + TCUtil.P + i + TCUtil.N + " человек!");
 		for (final Player pl : Bukkit.getOnlinePlayers()) pl.sendPlayerListFooter(c);
 	}
 	
 	public static void updateScore(final PlHunter ph) {
 		ph.score.getSideBar().reset().title(Main.PRFX)
 			.add(" ")
-			.add(TCUtils.N + "Карта: " + TCUtils.A + "ЛОББИ")
-			.add(TCUtils.A + "=-=-=-=-=-=-=-")
+			.add(TCUtil.N + "Карта: " + TCUtil.A + "ЛОББИ")
+			.add(TCUtil.A + "=-=-=-=-=-=-=-")
 			.add(" ")
-			.add(TCUtils.N + "Набор для")
-			.add(Arena.SKIT, Arena.SURV_CLR + "Игрока: " + TCUtils.P + ph.survKit())
-			.add(Arena.ZKIT, Arena.ZOMB_CLR + "Зомби: " + TCUtils.P + ph.zombKit())
+			.add(TCUtil.N + "Набор для")
+			.add(Arena.SKIT, Arena.SURV_CLR + "Игрока: " + TCUtil.P + ph.survKit())
+			.add(Arena.ZKIT, Arena.ZOMB_CLR + "Зомби: " + TCUtil.P + ph.zombKit())
 			.add(" ")
-			.add(TCUtils.A + "=-=-=-=-=-=-=-")
-			.add(TCUtils.N + "(" + TCUtils.P + "К" + TCUtils.N + "/" + TCUtils.A + "Д" + TCUtils.N + "): " + TCUtils.P +
-				ApiOstrov.toSigFigs((float) ph.getStat(Stat.ZH_zklls) / (float) ph.getStat(Stat.ZH_pdths), (byte) 2))
+			.add(TCUtil.A + "=-=-=-=-=-=-=-")
+			.add(TCUtil.N + "(" + TCUtil.P + "К" + TCUtil.N + "/" + TCUtil.A + "Д" + TCUtil.N + "): " + TCUtil.P +
+				StringUtil.toSigFigs((double) ph.getStat(Stat.ZH_zklls) / (double) ph.getStat(Stat.ZH_pdths), (byte) 2))
 			.add(" ")
 			.add("§e    ostrov77.ru").build();
 	}
 	
 	public static void endArena(final Arena ar) {
-		ApiOstrov.sendArenaData(ar.getName(), ru.komiss77.enums.GameState.ОЖИДАНИЕ, "§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §20§7/§2" + ar.getMin(), "", 0);
+		GM.sendArenaData(Game.ZH, ar.getName(), ru.komiss77.enums.GameState.ОЖИДАНИЕ, 0, 
+			"§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §20§7/§2" + ar.getMin());
 		activearenas.remove(ar.getName());
 		for (final PlHunter plh : ar.getSpcs()) {
 			lobbyPlayer(plh.getPlayer(), plh);
@@ -184,10 +187,10 @@ public class Main extends JavaPlugin{
 	}
 
 	public static String bfr(final char b, final String txt, final char d) {
-		return TCUtils.N + b + txt + TCUtils.N + d + " ";
+		return TCUtil.N + b + txt + TCUtil.N + d + " ";
 	}
 
 	public static String afr(final char b, final String txt, final char d) {
-		return " " + TCUtils.N + b + txt + TCUtils.N + d;
+		return " " + TCUtil.N + b + txt + TCUtil.N + d;
 	}
 }

@@ -17,16 +17,17 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import ru.komiss77.ApiOstrov;
 import ru.komiss77.Ostrov;
-import ru.komiss77.Perm;
 import ru.komiss77.enums.Data;
 import ru.komiss77.enums.Stat;
 import ru.komiss77.events.ChatPrepareEvent;
 import ru.komiss77.events.LocalDataLoadEvent;
 import ru.komiss77.listener.ChatLst;
 import ru.komiss77.modules.player.PM;
-import ru.komiss77.utils.TCUtils;
+import ru.komiss77.modules.player.Perm;
+import ru.komiss77.utils.EntityUtil;
+import ru.komiss77.utils.StringUtil;
+import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Game.Arena;
 import ru.romindous.zh.Game.GameState;
 import ru.romindous.zh.Main;
@@ -40,7 +41,7 @@ public class MainLis implements Listener {
 	public void onJoin(final LocalDataLoadEvent e) {
 		final Player p = e.getPlayer();
 		Main.lobbyPlayer(p, (PlHunter) e.getOplayer());
-		p.sendPlayerListHeader(TCUtils.format(Main.PRFX
+		p.sendPlayerListHeader(TCUtil.form(Main.PRFX
 			+ "\n" + switch (Ostrov.random.nextInt(4)) {
 			case 0 -> "Добро пожаловать!";
 			case 1 -> "Приятной игры!";
@@ -125,7 +126,7 @@ public class MainLis implements Listener {
 
 			switch (ar.getState()) {
 			case RUNNING:
-				final LivingEntity ld = ApiOstrov.getDamager(e, true);
+				final LivingEntity ld = EntityUtil.getDamager(e, true);
 				if (ld == null) {
 					if (p.getHealth() - e.getFinalDamage() < 0.1) {
 						e.setCancelled(true);
@@ -152,7 +153,7 @@ public class MainLis implements Listener {
 							ldn = dmgr.getName();
 							dmgr.playSound(p.getLocation(), Sound.ENTITY_WITHER_BREAK_BLOCK, 20, 1.5f);
 							oph.killsI();
-						} else ldn = ld.customName() == null ? ApiOstrov.nrmlzStr(ld.getType().name()) : TCUtils.toString(ld.customName());
+						} else ldn = ld.customName() == null ? StringUtil.nrmlzStr(ld.getType().name()) : TCUtil.deform(ld.customName());
 						ar.msgEveryone(plDie(p.getName(), ldn, false, (int) ld.getHealth() + 1));
 						ar.respZh(p, ph);
 					} else {
@@ -167,7 +168,7 @@ public class MainLis implements Listener {
 							oph.addStat(Stat.ZH_zklls, 1);
 							oph.killsI();
 						} else ldn = ld.customName() == null ?
-							ApiOstrov.nrmlzStr(ld.getType().name()) : TCUtils.toString(ld.customName());
+							StringUtil.nrmlzStr(ld.getType().name()) : TCUtil.deform(ld.customName());
 						ar.msgEveryone(plDie(p.getName(), ldn, true, (int) ld.getHealth() + 1));
 						ph.addStat(Stat.ZH_pdths, 1);
 						ar.zombifyPl(p, ph);
@@ -199,9 +200,9 @@ public class MainLis implements Listener {
 		e.showLocal(true);
 		e.showSelf(false);
 		if (ar == null) {
-			final Component modMsg = TCUtils.format(Main.bfr('{', TCUtils.P + ApiOstrov.toSigFigs(
-				(float) ph.getStat(Stat.ZH_zklls) / (float) ph.getStat(Stat.ZH_pdths), (byte) 2), '}')
-				+ ChatLst.NIK_COLOR + p.getName() + Main.afr('[', TCUtils.A + "ЛОББИ", ']') + " §7§o≫ " + TCUtils.N + msg);
+			final Component modMsg = TCUtil.form(Main.bfr('{', TCUtil.P + StringUtil.toSigFigs(
+				(double) ph.getStat(Stat.ZH_zklls) / (double) ph.getStat(Stat.ZH_pdths), (byte) 2), '}')
+				+ ChatLst.NIK_COLOR + p.getName() + Main.afr('[', TCUtil.A + "ЛОББИ", ']') + " §7§o≫ " + TCUtil.N + msg);
 			for (final Audience au : e.viewers()) {
 				au.sendMessage(modMsg);
 			}
@@ -212,8 +213,8 @@ public class MainLis implements Listener {
 			switch (ar.getState()) {
 			case LOBBY_START:
 			case WAITING:
-				modMsg = TCUtils.format(ChatLst.NIK_COLOR + p.getName()
-					+ Main.afr('[', TCUtils.P + ar.getName(), ']') + " §7§o≫ " + TCUtils.N + msg);
+				modMsg = TCUtil.form(ChatLst.NIK_COLOR + p.getName()
+					+ Main.afr('[', TCUtil.P + ar.getName(), ']') + " §7§o≫ " + TCUtil.N + msg);
 				for (final Audience au : e.viewers()) {
 					au.sendMessage(modMsg);
 				}
@@ -223,8 +224,8 @@ public class MainLis implements Listener {
 			case RUNNING:
 			case END:
 				if (msg.length() > 1 && msg.charAt(0) == '!') {
-					modMsg = TCUtils.format(TCUtils.N + "[Всем] " + (ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
-						p.getName() + " §7§o≫ " + TCUtils.N + msg.substring(1));
+					modMsg = TCUtil.form(TCUtil.N + "[Всем] " + (ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
+						p.getName() + " §7§o≫ " + TCUtil.N + msg.substring(1));
 					for (final PlHunter ors : ar.getPls()) {
 						final Player pl = ors.getPlayer();
 						pl.sendMessage(modMsg);
@@ -236,8 +237,8 @@ public class MainLis implements Listener {
 						pl.playSound(pl.getLocation(), Sound.BLOCK_GRINDSTONE_USE, 1f, 1.4f);
 					}
 				} else {
-					modMsg = TCUtils.format((ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
-						p.getName() + " §7§o≫ " + TCUtils.N + msg);
+					modMsg = TCUtil.form((ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
+						p.getName() + " §7§o≫ " + TCUtil.N + msg);
 					for (final PlHunter ors : ar.getPls()) {
 						if (ors.zombie() == ph.zombie()) {
 							final Player pl = ors.getPlayer();
@@ -265,13 +266,13 @@ public class MainLis implements Listener {
 	public String plDie(final String tgt, final String dmgr, final boolean byZH, final int hlth) {
         return switch (Ostrov.random.nextInt(4)) {
             case 0 -> Main.PRFX + (byZH ? Arena.ZOMB_CLR : Arena.SURV_CLR) + dmgr + " " + Main.bfr('[', "§c❤§6" + hlth, ']')
-				+ "раздробил бошку " + (byZH ? Arena.SURV_CLR : Arena.ZOMB_CLR) + tgt + TCUtils.N + "!";
+				+ "раздробил бошку " + (byZH ? Arena.SURV_CLR : Arena.ZOMB_CLR) + tgt + TCUtil.N + "!";
             case 1 -> Main.PRFX + (byZH ? Arena.ZOMB_CLR : Arena.SURV_CLR) + dmgr + " " + Main.bfr('[', "§c❤§6" + hlth, ']')
-				+ "лишил " + (byZH ? Arena.SURV_CLR : Arena.ZOMB_CLR) + tgt + TCUtils.N + " конечностей!";
+				+ "лишил " + (byZH ? Arena.SURV_CLR : Arena.ZOMB_CLR) + tgt + TCUtil.N + " конечностей!";
             case 2 -> Main.PRFX + (byZH ? Arena.ZOMB_CLR : Arena.SURV_CLR) + dmgr + " " + Main.bfr('[', "§c❤§6" + hlth, ']')
-				+ "провел экзекуцию " + (byZH ? Arena.SURV_CLR : Arena.ZOMB_CLR) + tgt + TCUtils.N + "!";
+				+ "провел экзекуцию " + (byZH ? Arena.SURV_CLR : Arena.ZOMB_CLR) + tgt + TCUtil.N + "!";
             case 3 -> Main.PRFX + (byZH ? Arena.ZOMB_CLR : Arena.SURV_CLR) + dmgr + " " + Main.bfr('[', "§c❤§6" + hlth, ']')
-				+ "анигилировал " + (byZH ? Arena.SURV_CLR : Arena.ZOMB_CLR) + tgt + TCUtils.N + "!";
+				+ "анигилировал " + (byZH ? Arena.SURV_CLR : Arena.ZOMB_CLR) + tgt + TCUtil.N + "!";
             default -> "";
         };
 	}

@@ -1,8 +1,10 @@
 package ru.romindous.zh.Commands;
 
+import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,16 +18,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.Nullable;
+import ru.komiss77.OConfig;
 import ru.komiss77.modules.player.PM;
 import ru.komiss77.utils.ItemBuilder;
-import ru.komiss77.utils.ItemUtils;
-import ru.komiss77.utils.OstrovConfig;
-import ru.komiss77.utils.TCUtils;
+import ru.komiss77.utils.ItemUtil;
+import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Game.Arena;
 import ru.romindous.zh.Game.GameState;
 import ru.romindous.zh.Main;
@@ -40,7 +40,7 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 
 	public static final String split = "¶";
 	private static final String[] esa = {};
-	public static final OstrovConfig kits = new OstrovConfig(new File(
+	public static final OConfig kits = new OConfig(new File(
 		Main.plug.getDataFolder() + File.separator + "kits.yml"), 0);
 
 	public static String firstOf(final String path) {
@@ -105,7 +105,7 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 							p.sendMessage("§cТакой набор уже есть");
 							return true;
 						}
-						Inventory inv = Bukkit.createInventory(p, 27, TCUtils.format("§3Создание Набора"));
+						Inventory inv = Bukkit.createInventory(p, 27, TCUtil.form("§3Создание Набора"));
 						inv.setContents(fillAddInv());
 						if (args[1].equalsIgnoreCase("player")) {
 							inv.setItem(13, new ItemBuilder(Material.VILLAGER_SPAWN_EGG).name(args[2]).build());
@@ -114,7 +114,7 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 						}
 						p.openInventory(inv);
 					} else if (args[0].equalsIgnoreCase("edit") && kits.contains("kits." + args[1] + "." + args[2])) {
-						Inventory inv = Bukkit.createInventory(p, 27, TCUtils.format("§3Создание Набора"));
+						Inventory inv = Bukkit.createInventory(p, 27, TCUtil.form("§3Создание Набора"));
 						inv.setContents(fillEditInv("kits." + args[1] + "." + args[2]));
 						if (args[1].equalsIgnoreCase("player")) {
 							inv.setItem(13, new ItemBuilder(Material.VILLAGER_SPAWN_EGG).name(args[2]).build());
@@ -137,7 +137,7 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 						p.sendMessage(Main.PRFX + "§cВы не можете изпользовать эту комманду во время игры!");
 						return true;
 					}
-					final Inventory inv = Bukkit.createInventory(p, 27, TCUtils.format("§3Доступные Наборы"));
+					final Inventory inv = Bukkit.createInventory(p, 27, TCUtil.form("§3Доступные Наборы"));
 					inv.setContents(fillChooseInv());
 					p.openInventory(inv);
 				} else {
@@ -150,7 +150,7 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 					return true;
 				}
 			} else if (args.length == 1 && args[0].equalsIgnoreCase("choose")) {
-				final Inventory inv = Bukkit.createInventory(p, 27, TCUtils.format("§3Доступные Наборы"));
+				final Inventory inv = Bukkit.createInventory(p, 27, TCUtil.form("§3Доступные Наборы"));
 				inv.setContents(fillChooseInv());
 				p.openInventory(inv);
 			} else {
@@ -172,19 +172,19 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 				loot[i] = new ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS_PANE).name("§0.").build();
 				break;
 			case 1:
-				loot[i] = new ItemBuilder(Material.VILLAGER_SPAWN_EGG).name(TCUtils.N + "Наборы для " + Arena.SURV_CLR + "Игроков").build();
+				loot[i] = new ItemBuilder(Material.VILLAGER_SPAWN_EGG).name(TCUtil.N + "Наборы для " + Arena.SURV_CLR + "Игроков").build();
 				break;
 			case 7:
-				loot[i] = new ItemBuilder(Material.ZOMBIE_SPAWN_EGG).name(TCUtils.N + "Наборы для " + Arena.ZOMB_CLR + "Зомби").build();
+				loot[i] = new ItemBuilder(Material.ZOMBIE_SPAWN_EGG).name(TCUtil.N + "Наборы для " + Arena.ZOMB_CLR + "Зомби").build();
 				break;
 			case 9, 10, 11, 12, 18, 19, 20, 21:
 				if (kits.getConfigurationSection("kits.player") == null) break;
 				kns = kits.getConfigurationSection("kits.player").getKeys(false).toArray(esa);
 				if (pused < kns.length) {
 					loot[i] = new ItemBuilder(getItemStack("kits.player." + kns[pused] + ".0"))
-						.name(Arena.SURV_CLR + "§n" + kns[pused]).clearLore()
-						.addLore(" ").addLore(TCUtils.P + "ЛКМ §7- выбрать набор")
-						.addLore(TCUtils.A + "ПКМ §7- посмотреть набор").build();
+						.name(Arena.SURV_CLR + "§n" + kns[pused]).deLore()
+						.lore(" ").lore(TCUtil.P + "ЛКМ §7- выбрать набор")
+						.lore(TCUtil.A + "ПКМ §7- посмотреть набор").build();
 					pused++;
 				}
 				break;
@@ -193,9 +193,9 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 				kns = kits.getConfigurationSection("kits.zombie").getKeys(false).toArray(esa);
 				if (zused < kns.length) {
 					loot[i] = new ItemBuilder(getItemStack("kits.zombie." + kns[zused] + ".0"))
-						.name(Arena.ZOMB_CLR + "§n" + kns[zused]).clearLore()
-						.addLore(" ").addLore(TCUtils.P + "ЛКМ §7- выбрать набор")
-						.addLore(TCUtils.A + "ПКМ §7- посмотреть набор").build();
+						.name(Arena.ZOMB_CLR + "§n" + kns[zused]).deLore()
+						.lore(" ").lore(TCUtil.P + "ЛКМ §7- выбрать набор")
+						.lore(TCUtil.A + "ПКМ §7- посмотреть набор").build();
 					zused++;
 				}
 				break;
@@ -224,10 +224,10 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 				loot[i] = getItemStack(path + ".boots");
 				break;
 			case 5:
-				loot[i] = new ItemBuilder(Material.SPIDER_EYE).name("§6Здоровье: §4-1").setAmount(kits.getInt(path + ".hp")).build();
+				loot[i] = new ItemBuilder(Material.SPIDER_EYE).name("§6Здоровье: §4-1").amount(kits.getInt(path + ".hp")).build();
 				break;
 			case 6:
-				loot[i] = new ItemBuilder(Material.BEETROOT).name("§6Здоровье: §2+1").setAmount(kits.getInt(path + ".hp")).build();
+				loot[i] = new ItemBuilder(Material.BEETROOT).name("§6Здоровье: §2+1").amount(kits.getInt(path + ".hp")).build();
 				break;
 			case 8:
 				loot[i] = new ItemBuilder(Material.GREEN_WOOL).name("§aГотово").build();
@@ -273,13 +273,13 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 				loot[i] = new ItemStack(Material.LEATHER_BOOTS);
 				break;
 			case 5:
-				loot[i] = new ItemBuilder(Material.SPIDER_EYE).name("§6Здоровье: §4-1").setAmount(20).build();
+				loot[i] = new ItemBuilder(Material.SPIDER_EYE).name("§6Здоровье: §4-1").amount(20).build();
 				break;
 			case 6:
-				loot[i] = new ItemBuilder(Material.BEETROOT).name("§6Здоровье: §2+1").setAmount(20).build();
+				loot[i] = new ItemBuilder(Material.BEETROOT).name("§6Здоровье: §2+1").amount(20).build();
 				break;
 			case 8:
-				loot[i] = new ItemBuilder(Material.GREEN_WOOL).name("§aГотово").setAmount(20).build();
+				loot[i] = new ItemBuilder(Material.GREEN_WOOL).name("§aГотово").amount(20).build();
 				break;
 			case 17:
 				loot[i] = new ItemBuilder(Material.BRICK).name("§6Без привилегий").build();
@@ -301,8 +301,8 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 	public static @Nullable ItemStack getItemStack(final String path) {
 		final ConfigurationSection cs = kits.getConfigurationSection(path);
 		if (cs == null || !cs.contains("mat")) {
-//			Bukkit.broadcast(TCUtils.format("get " + path + " to " + kits.getString(path)));
-			return ItemUtils.parseItem(kits.getString(path), split);
+//			Bukkit.broadcast(TCUtil.form("get " + path + " to " + kits.getString(path)));
+			return ItemUtil.parseItem(kits.getString(path), split);
 		}
 		//результат
 		final ItemStack result = new ItemStack(Material.getMaterial(cs.getString("mat")));
@@ -339,7 +339,7 @@ public class KitsCmd implements CommandExecutor, TabCompleter{
 			result.setItemMeta(lmeta);
 		} else if (cs.contains("pot")) {
 			PotionMeta pmeta = (PotionMeta) meta;
-			pmeta.setBasePotionData(new PotionData(PotionType.valueOf(cs.getString("pot.base"))));
+			pmeta.setBasePotionType(Registry.POTION.get(Key.key("pot.base")));
 			if (cs.contains("pot.color")) {
 				pmeta.setColor(Color.fromRGB(Integer.parseInt(cs.getString("pot.color"))));
 			}

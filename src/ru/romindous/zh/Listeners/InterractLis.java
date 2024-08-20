@@ -20,8 +20,9 @@ import ru.komiss77.ApiOstrov;
 import ru.komiss77.Ostrov;
 import ru.komiss77.modules.player.PM;
 import ru.komiss77.utils.ItemBuilder;
-import ru.komiss77.utils.ItemUtils;
-import ru.komiss77.utils.TCUtils;
+import ru.komiss77.utils.ItemUtil;
+import ru.komiss77.utils.ScreenUtil;
+import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Game.Arena;
 import ru.romindous.zh.Game.GameState;
 import ru.romindous.zh.Main;
@@ -63,12 +64,12 @@ public class InterractLis implements Listener{
 			e.setCancelled(e.getClickedBlock().getType() == Material.FARMLAND);
 			break;
 		case RIGHT_CLICK_AIR:
-			if (ItemUtils.isBlank(it, false)) {
+			if (ItemUtil.isBlank(it, false)) {
 				break;
 			} else if (ar != null && ar.getState() == GameState.RUNNING) {
 				if (ph.zombie() && p.getInventory().getHeldItemSlot() == 0) {
 					if (p.hasCooldown(p.getInventory().getItemInMainHand().getType())) {
-						ApiOstrov.sendActionBarDirect(p, "§cВы еще набираете силы для прыжка");
+						ScreenUtil.sendActionBarDirect(p, "§cВы еще набираете силы для прыжка");
 					} else {
 						p.setVelocity(p.getVelocity().add(p.getLocation().getDirection().multiply(1.5)));
 						p.playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_SHOOT, 80, 0.8f);
@@ -80,7 +81,7 @@ public class InterractLis implements Listener{
 				case WRITTEN_BOOK:
 					e.setCancelled(true);
 					if (p.hasCooldown(it.getType())) {
-						ApiOstrov.sendActionBarDirect(p, "§cВаша способность еще не готова");
+						ScreenUtil.sendActionBarDirect(p, "§cВаша способность еще не готова");
 					} else {
 						final Location loc = p.getLocation();
 						crtEnt(loc.clone().add(0,0,1), EntityType.ZOMBIE_VILLAGER, (byte) 2, 0.5f, (short) 900, "§cМертвец");
@@ -93,7 +94,7 @@ public class InterractLis implements Listener{
 				case NETHER_STAR:
 					e.setCancelled(true);
 					if (p.hasCooldown(it.getType())) {
-						ApiOstrov.sendActionBarDirect(p, "§cВаша способность еще не готова");
+						ScreenUtil.sendActionBarDirect(p, "§cВаша способность еще не готова");
 					} else {
 						final Location loc = p.getLocation();
 						crtEnt(loc.clone().add(0,1,1), EntityType.VEX, (byte) 1, 0.4f, (short) 600, "§eСвятой Дух");
@@ -113,11 +114,11 @@ public class InterractLis implements Listener{
 				break;
 			} else {
 				final String inm = it.getItemMeta().hasDisplayName()
-						? TCUtils.toString(it.getItemMeta().displayName()) : "";
+						? TCUtil.deform(it.getItemMeta().displayName()) : "";
 				if (inm.contains("Карты")) {
 					e.setCancelled(true);
 					p.playSound(p.getLocation(), Sound.BLOCK_BEEHIVE_EXIT, 80, 1);
-					final Inventory inv = Bukkit.createInventory(p, 27 + (9 * (int) (((float) Main.nonactivearenas.size()) / 9.0f)), TCUtils.format("§6Меню выбора Карты"));
+					final Inventory inv = Bukkit.createInventory(p, 27 + (9 * (int) (((float) Main.nonactivearenas.size()) / 9.0f)), TCUtil.form("§6Меню выбора Карты"));
 					inv.setContents(fillArInv(27 + (9 * (int) (((float) Main.nonactivearenas.size()) / 9.0f))));
 					p.openInventory(inv);
 				} else if (inm.contains("Набор")) {
@@ -138,14 +139,14 @@ public class InterractLis implements Listener{
 			}
 			break;
 		case RIGHT_CLICK_BLOCK:
-			if (ItemUtils.isBlank(it, false)) {
+			if (ItemUtil.isBlank(it, false)) {
 				break;
 			} else if (ar != null && ar.getState() == GameState.RUNNING) {
 				switch (it.getType()) {
 				case WRITTEN_BOOK:
 					e.setCancelled(true);
 					if (p.hasCooldown(it.getType())) {
-						ApiOstrov.sendActionBarDirect(p, "§cВаша способность еще не готова");
+						ScreenUtil.sendActionBarDirect(p, "§cВаша способность еще не готова");
 					} else {
 						final Location loc = p.getLocation();
 						crtEnt(loc.clone().add(0,0,1), EntityType.ZOMBIE_VILLAGER, (byte) 2, 0.5f, (short) 900, "§cМертвец");
@@ -158,7 +159,7 @@ public class InterractLis implements Listener{
 				case NETHER_STAR:
 					e.setCancelled(true);
 					if (p.hasCooldown(it.getType())) {
-						ApiOstrov.sendActionBarDirect(p, "§cВаша способность еще не готова");
+						ScreenUtil.sendActionBarDirect(p, "§cВаша способность еще не готова");
 					} else {
 						final Location loc = p.getLocation();
 						crtEnt(loc.clone().add(0,1,1), EntityType.VEX, (byte) 1, 0.4f, (short) 600, "§eСвятой Дух");
@@ -179,11 +180,11 @@ public class InterractLis implements Listener{
 				break;
 			} else {
 				final String inm = it.getItemMeta().hasDisplayName()
-					? TCUtils.toString(it.getItemMeta().displayName()) : "";
+					? TCUtil.deform(it.getItemMeta().displayName()) : "";
 				if (inm.contains("Карты")) {
 					e.setCancelled(true);
 					p.playSound(p.getLocation(), Sound.BLOCK_BEEHIVE_EXIT, 80, 1);
-					final Inventory inv = Bukkit.createInventory(p, 27 + (9 * (int) (((float) Main.nonactivearenas.size()) / 9.0f)), TCUtils.format("§6Меню выбора Карты"));
+					final Inventory inv = Bukkit.createInventory(p, 27 + (9 * (int) (((float) Main.nonactivearenas.size()) / 9.0f)), TCUtil.form("§6Меню выбора Карты"));
 					inv.setContents(fillArInv(27 + (9 * (int) (((float) Main.nonactivearenas.size()) / 9.0f))));
 					p.openInventory(inv);
 				} else if (inm.contains("Набор")) {
@@ -237,14 +238,14 @@ public class InterractLis implements Listener{
 						if (ar.getState() == GameState.WAITING || ar.getState() == GameState.LOBBY_START) {
 							final int pls = ar.getPlAmount(null);
 							loot[i] = new ItemBuilder(Material.YELLOW_CONCRETE_POWDER).name("§e" + Main.nonactivearenas.get(used))
-								.addLore("").addLore("§6Игроки: " + (pls < ar.getMin() ? pls + " из " + ar.getMin() : pls + " из " + ar.getMax())).build();
+								.lore("").lore("§6Игроки: " + (pls < ar.getMin() ? pls + " из " + ar.getMin() : pls + " из " + ar.getMax())).build();
 						} else {
 							loot[i] = new ItemBuilder(Material.RED_CONCRETE_POWDER).name("§c" + Main.nonactivearenas.get(used))
-								.addLore(Arrays.asList("", "§4Идет Игра", "", "§7Нажмите для наблюдения!")).build();
+								.lore(Arrays.asList("", "§4Идет Игра", "", "§7Нажмите для наблюдения!")).build();
 						}
 					} else {
 						loot[i] = new ItemBuilder(Material.GREEN_CONCRETE_POWDER).name("§a" + Main.nonactivearenas.get(used))
-							.addLore("").addLore("§2Ожидание (§7" + arenas.getInt("arenas." + Main.nonactivearenas.get(used) + ".min") + "§2)").build();
+							.lore("").lore("§2Ожидание (§7" + arenas.getInt("arenas." + Main.nonactivearenas.get(used) + ".min") + "§2)").build();
 					}
 					used++;
 				}
@@ -259,11 +260,11 @@ public class InterractLis implements Listener{
 		le.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(spd);
 		le.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(hlth);
 		le.setHealth(hlth);
-		le.customName(TCUtils.format(nm));
+		le.customName(TCUtil.form(nm));
 		le.setCustomNameVisible(false);
 		le.setTicksLived(1);
 		Arrays.fill(le.getEquipment().getArmorContents(), null);
-		le.getEquipment().getItemInMainHand().setType(Material.AIR);
+		le.getEquipment().setItemInMainHand(null);
 		le.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 1000000, 1, true, false));
 		loc.getWorld().playSound(loc, Sound.valueOf("ENTITY_" + et.toString() + "_HURT"), 0.5f, 0.8f);
 		Ostrov.sync(() -> le.remove(), tm);

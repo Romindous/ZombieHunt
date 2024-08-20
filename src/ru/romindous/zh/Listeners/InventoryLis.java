@@ -16,8 +16,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import ru.komiss77.modules.player.PM;
 import ru.komiss77.utils.ItemBuilder;
-import ru.komiss77.utils.ItemUtils;
-import ru.komiss77.utils.TCUtils;
+import ru.komiss77.utils.ItemUtil;
+import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Commands.KitsCmd;
 import ru.romindous.zh.Game.Arena;
 import ru.romindous.zh.Main;
@@ -33,7 +33,7 @@ public class InventoryLis implements Listener{
 		
 		if (e.getClick() == ClickType.NUMBER_KEY || e.getClick() == ClickType.SWAP_OFFHAND) {
 			e.setCancelled(true);
-			e.getCursor().setType(Material.AIR);
+			e.getWhoClicked().setItemOnCursor(null);
 			return;
 		}
 		
@@ -46,14 +46,14 @@ public class InventoryLis implements Listener{
 		}
 
 		final String nm = it.getItemMeta() == null || !it.getItemMeta().hasDisplayName()
-			? "" : TCUtils.stripColor(it.getItemMeta().displayName());
+			? "" : TCUtil.strip(it.getItemMeta().displayName());
 		if ((nm.contains("Выбор") || nm.contains("Набор") || nm.contains("Выход"))) {
 			e.setCancelled(true);
-			e.getCursor().setType(Material.AIR);
+			e.getWhoClicked().setItemOnCursor(null);
 			return;
 		}
 		
-		final String inm = TCUtils.toString(e.getView().title());
+		final String inm = TCUtil.deform(e.getView().title());
 		if (inm.contains("Карты")) {
 			e.setCancelled(true);
 			final Player p = (Player) e.getWhoClicked();
@@ -69,7 +69,7 @@ public class InventoryLis implements Listener{
 				p.getInventory().clear();
 				ItemStack item = new ItemStack(Material.REDSTONE);
 				ItemMeta meta = item.getItemMeta();
-				meta.displayName(TCUtils.format("§4Обратно в лобби"));
+				meta.displayName(TCUtil.form("§4Обратно в лобби"));
 				item.setItemMeta(meta);
 				p.getInventory().setItem(8, item);
 				Arena.getNameArena(nm).addSpec(p);
@@ -86,21 +86,21 @@ public class InventoryLis implements Listener{
 			final ConfigurationSection plcs = KitsCmd.kits.getConfigurationSection("kits.player." + nm);
 			if (plcs != null) {
 				if (e.getClick() == ClickType.RIGHT) {
-					final Inventory inv = Bukkit.createInventory(p, 27, TCUtils.format("§3Просмотр Набора"));
+					final Inventory inv = Bukkit.createInventory(p, 27, TCUtil.form("§3Просмотр Набора"));
 					inv.setContents(KitsCmd.fillEditInv("kits.player." + nm));
 					inv.setItem(8, new ItemBuilder(Material.REDSTONE_TORCH).name("§8Назад").build());
 					inv.setItem(5, inv.getItem(4));
-					inv.setItem(6, new ItemBuilder(Material.APPLE).setAmount(inv.getItem(6).getAmount()).name("§6Здоровье:").build());
+					inv.setItem(6, new ItemBuilder(Material.APPLE).amount(inv.getItem(6).getAmount()).name("§6Здоровье:").build());
 					p.openInventory(inv);
 				} else {
 					final String prm = plcs.getString("perm");
 					if (prm != null && prm.charAt(0) != 'N' && !PM.getOplayer(p).hasGroup(prm)) {
-						p.sendMessage(Main.PRFX + "§cВам нужно иметь донат " + TCUtils.A + transDon(prm) + "§c для игры с этим набором!");
+						p.sendMessage(Main.PRFX + "§cВам нужно иметь донат " + TCUtil.A + transDon(prm) + "§c для игры с этим набором!");
 						p.playSound(p.getLocation(), Sound.ITEM_BUCKET_EMPTY_LAVA, 2f, 0.8f);
 						return;
 					}
 					p.playSound(p.getLocation(), Sound.ITEM_ARMOR_EQUIP_IRON, 2f, 1f);
-					p.sendMessage(Main.PRFX + "Выбран набор " + TCUtils.P + nm + TCUtils.N + " для Игрока");
+					p.sendMessage(Main.PRFX + "Выбран набор " + TCUtil.P + nm + TCUtil.N + " для Игрока");
 					PM.getOplayer(p, PlHunter.class).survKit(nm);
 				}
 				return;
@@ -110,21 +110,21 @@ public class InventoryLis implements Listener{
 			if (zbcs != null) {
 				e.setCancelled(true);
 				if (e.getClick() == ClickType.RIGHT) {
-					final Inventory inv = Bukkit.createInventory(p, 27, TCUtils.format("§3Просмотр Набора"));
+					final Inventory inv = Bukkit.createInventory(p, 27, TCUtil.form("§3Просмотр Набора"));
 					inv.setContents(KitsCmd.fillEditInv("kits.zombie." + nm));
 					inv.setItem(8, new ItemBuilder(Material.REDSTONE_TORCH).name("§8Назад").build());
 					inv.setItem(5, inv.getItem(4));
-					inv.setItem(6, new ItemBuilder(Material.APPLE).setAmount(inv.getItem(6).getAmount()).name("§6Здоровье:").build());
+					inv.setItem(6, new ItemBuilder(Material.APPLE).amount(inv.getItem(6).getAmount()).name("§6Здоровье:").build());
 					p.openInventory(inv);
 				} else {
 					final String prm = zbcs.getString("perm");
 					if (prm != null && prm.charAt(0) != 'N' && !PM.getOplayer(p).hasGroup(prm)) {
-						p.sendMessage(Main.PRFX + "§cВам нужно иметь донат " + TCUtils.A + transDon(prm) + "§c для игры с этим набором!");
+						p.sendMessage(Main.PRFX + "§cВам нужно иметь донат " + TCUtil.A + transDon(prm) + "§c для игры с этим набором!");
 						p.playSound(p.getLocation(), Sound.ITEM_BUCKET_EMPTY_LAVA, 2f, 0.8f);
 						return;
 					}
 					p.playSound(p.getLocation(), Sound.ITEM_ARMOR_EQUIP_IRON, 2f, 1f);
-					p.sendMessage(Main.PRFX + "Выбран набор " + TCUtils.P + nm + TCUtils.N + " для Зомби");
+					p.sendMessage(Main.PRFX + "Выбран набор " + TCUtil.P + nm + TCUtil.N + " для Зомби");
 					PM.getOplayer(p, PlHunter.class).zombKit(nm);
 				}
 				return;
@@ -174,16 +174,16 @@ public class InventoryLis implements Listener{
 					e.setCancelled(true);
 					if (e.getCurrentItem().getAmount() == 1) break;
 					final ItemStack item = e.getCurrentItem();
-					e.getClickedInventory().setItem(5, new ItemBuilder(item).setAmount(item.getAmount() - 1).build());
-					e.getClickedInventory().setItem(6, new ItemBuilder(e.getClickedInventory().getItem(6)).setAmount(item.getAmount() - 1).build());
+					e.getClickedInventory().setItem(5, new ItemBuilder(item).amount(item.getAmount() - 1).build());
+					e.getClickedInventory().setItem(6, new ItemBuilder(e.getClickedInventory().getItem(6)).amount(item.getAmount() - 1).build());
 				}
 				break;
 			case BEETROOT:
 				if (nm.contains("+1")) {
 					e.setCancelled(true);
 					final ItemStack item = e.getCurrentItem();
-					e.getClickedInventory().setItem(5, new ItemBuilder(e.getClickedInventory().getItem(5)).setAmount(item.getAmount() + 1).build());
-					e.getClickedInventory().setItem(6, new ItemBuilder(item).setAmount(item.getAmount() + 1).build());
+					e.getClickedInventory().setItem(5, new ItemBuilder(e.getClickedInventory().getItem(5)).amount(item.getAmount() + 1).build());
+					e.getClickedInventory().setItem(6, new ItemBuilder(item).amount(item.getAmount() + 1).build());
 				}
 				break;
 			case GREEN_WOOL:
@@ -191,7 +191,7 @@ public class InventoryLis implements Listener{
 					e.setCancelled(true);
 					createKit(e.getClickedInventory().getContents());
 					e.getWhoClicked().closeInventory();
-					e.getWhoClicked().sendMessage(Main.PRFX + "§7Набор " + TCUtils.P + TCUtils.toString(
+					e.getWhoClicked().sendMessage(Main.PRFX + "§7Набор " + TCUtil.P + TCUtil.deform(
 						e.getClickedInventory().getItem(13).getItemMeta().displayName()) + "§7 успешно создан!");
 				}
 				break;
@@ -233,8 +233,8 @@ public class InventoryLis implements Listener{
 
 	private static void createKit(final ItemStack[] loot) {
 		final String path = loot[13].getType() == Material.VILLAGER_SPAWN_EGG ? 
-			"kits.player." + TCUtils.toString(loot[13].getItemMeta().displayName()) 
-			: "kits.zombie." + TCUtils.toString(loot[13].getItemMeta().displayName());
+			"kits.player." + TCUtil.deform(loot[13].getItemMeta().displayName())
+			: "kits.zombie." + TCUtil.deform(loot[13].getItemMeta().displayName());
 		KitsCmd.kits.removeKey(path);
 		switch (loot[17].getType()) {
 			case NETHERITE_INGOT -> KitsCmd.kits.set(path + ".perm", "legend");
@@ -243,13 +243,13 @@ public class InventoryLis implements Listener{
 			default -> KitsCmd.kits.set(path + ".perm", "N");
 		}
 		KitsCmd.kits.set(path + ".hp", loot[5].getAmount());
-		KitsCmd.kits.set(path + ".helm", ItemUtils.toString(loot[0], KitsCmd.split));
-		KitsCmd.kits.set(path + ".chest", ItemUtils.toString(loot[1], KitsCmd.split));
-		KitsCmd.kits.set(path + ".leggs", ItemUtils.toString(loot[2], KitsCmd.split));
-		KitsCmd.kits.set(path + ".boots", ItemUtils.toString(loot[3], KitsCmd.split));
+		KitsCmd.kits.set(path + ".helm", ItemUtil.toString(loot[0], KitsCmd.split));
+		KitsCmd.kits.set(path + ".chest", ItemUtil.toString(loot[1], KitsCmd.split));
+		KitsCmd.kits.set(path + ".leggs", ItemUtil.toString(loot[2], KitsCmd.split));
+		KitsCmd.kits.set(path + ".boots", ItemUtil.toString(loot[3], KitsCmd.split));
 		for (int i = 19; i < 26; i++) {
 			if (loot[i] == null) continue;
-			KitsCmd.kits.set(path + "." + (i - 19), ItemUtils.toString(loot[i], KitsCmd.split));
+			KitsCmd.kits.set(path + "." + (i - 19), ItemUtil.toString(loot[i], KitsCmd.split));
 		}
 		KitsCmd.kits.saveConfig();
 	}

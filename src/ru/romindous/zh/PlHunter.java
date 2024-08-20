@@ -4,7 +4,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import ru.komiss77.modules.player.Oplayer;
-import ru.komiss77.utils.TCUtils;
+import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Commands.KitsCmd;
 import ru.romindous.zh.Game.Arena;
 
@@ -38,7 +38,7 @@ public class PlHunter extends Oplayer {
 
     public void survKit(final String kit) {
         mysqlData.put(Arena.SKIT, kit);
-        score.getSideBar().update(Arena.SKIT, Arena.SURV_CLR + "Игрока: " + TCUtils.P + kit);
+        score.getSideBar().update(Arena.SKIT, Arena.SURV_CLR + "Игрока: " + TCUtil.P + kit);
     }
     public String survKit() {
         final String def = KitsCmd.firstOf("kits.player");
@@ -48,7 +48,7 @@ public class PlHunter extends Oplayer {
 
     public void zombKit(final String kit) {
         mysqlData.put(Arena.ZKIT, kit);
-        score.getSideBar().update(Arena.ZKIT, Arena.ZOMB_CLR + "Зомби: " + TCUtils.P + kit);
+        score.getSideBar().update(Arena.ZKIT, Arena.ZOMB_CLR + "Зомби: " + TCUtil.P + kit);
     }
     public String zombKit() {
         final String def = KitsCmd.firstOf("kits.zombie");
