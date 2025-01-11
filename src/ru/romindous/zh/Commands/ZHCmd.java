@@ -208,7 +208,7 @@ public class ZHCmd implements CommandExecutor, TabCompleter{
 					if (Arena.getPlayerArena(p) == null) {
 						final Arena ar = Arena.getNameArena(args[1]);
 						if (ar != null) {
-							if (ar.getState() == GameState.WAITING || ar.getState() == GameState.LOBBY_START) {
+							if (ar.getState() == GameState.WAITING || ar.getState() == GameState.BEGINING) {
 								ar.addPl(p);
 								return true;
 							} else {
@@ -234,7 +234,7 @@ public class ZHCmd implements CommandExecutor, TabCompleter{
 						if (Arena.getPlayerArena(p) == null) {
 							final Arena ar = biggestArena(Main.activearenas.values());
 							if (ar != null) {
-								if (ar.getState() == GameState.WAITING || ar.getState() == GameState.LOBBY_START) {
+								if (ar.getState() == GameState.WAITING || ar.getState() == GameState.BEGINING) {
 									ar.addPl(p);
 								} else {
 									p.sendMessage(Main.PRFX + "§cНа этой арене уже идет игра!");
@@ -305,8 +305,7 @@ public class ZHCmd implements CommandExecutor, TabCompleter{
 		Arena ret = null;
 
 		for (final Arena ar : list) {
-			if (ar.getState() == GameState.WAITING
-				|| ar.getState() == GameState.LOBBY_START) {
+			if (ar.getState() == GameState.WAITING || ar.getState() == GameState.BEGINING) {
 				if (ret == null || ar.getPlAmount(null) > ret.getPlAmount(null)) {
 					ret = ar;
 				}

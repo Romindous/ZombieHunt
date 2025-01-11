@@ -211,9 +211,11 @@ public class Arena {
 				p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 20, 1);
 				beginScore(ph);
 				for (final Player pl : Bukkit.getOnlinePlayers()) {
-					final Arena oar = getPlayerArena(pl);
+					final Arena oar = Arena.getPlayerArena(pl);
 					if (oar == null || oar.getState() == GameState.WAITING) {
 						p.hidePlayer(Main.plug, pl);
+					} else if (oar.name.equals(name)) {
+						pl.showPlayer(Main.plug, p);
 					}
 				}
 				break;
@@ -286,6 +288,8 @@ public class Arena {
 				final Arena oar = getPlayerArena(pl);
 				if (oar == null || oar.getState() == GameState.WAITING) {
 					p.hidePlayer(Main.plug, pl);
+				} else if (oar.name.equals(name)) {
+					pl.showPlayer(Main.plug, p);
 				}
 			}
 			p.teleport(getRandSpawn());
@@ -541,7 +545,7 @@ public class Arena {
 	}
 
 	public void respZh(final Player p, final PlHunter ph) {
-		p.playSound(p.getLocation(), Sound.ITEM_AXE_STRIP, 4, 1);
+		p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_HURT, 4f, 0.6f);
 		for (final PotionEffect effect : p.getActivePotionEffects()) {
 	        p.removePotionEffect(effect.getType());
 		}

@@ -10,8 +10,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import ru.komiss77.modules.player.PM;
@@ -24,6 +26,13 @@ import ru.romindous.zh.Main;
 import ru.romindous.zh.PlHunter;
 
 public class InventoryLis implements Listener{
+
+	@EventHandler
+	public void onOpen(final InventoryOpenEvent e) {
+		final InventoryHolder hld = e.getInventory().getHolder();
+		if (hld == null || hld instanceof Player) return;
+		e.setCancelled(e.getPlayer().getGameMode() != GameMode.CREATIVE);
+	}
 
 	@EventHandler
 	public void onClick(final InventoryClickEvent e) {

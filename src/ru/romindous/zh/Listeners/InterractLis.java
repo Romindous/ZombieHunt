@@ -37,7 +37,7 @@ public class InterractLis implements Listener{
 	public void onSwap(final PlayerSwapHandItemsEvent e) {
 		final Arena ar = Arena.getPlayerArena(e.getPlayer());
 		if (ar != null) {
-			e.setCancelled(ar.getState() == GameState.WAITING || ar.getState() == GameState.LOBBY_START || ar.getState() == GameState.BEGINING || ar.getState() == GameState.END);
+			e.setCancelled(ar.getState() == GameState.WAITING || ar.getState() == GameState.BEGINING || ar.getState() == GameState.END);
 		} else {
 			e.setCancelled(true);
 		}
@@ -235,13 +235,16 @@ public class InterractLis implements Listener{
 				} else if (used < Main.nonactivearenas.size()) {
 					if (Arena.getNameArena(Main.nonactivearenas.get(used)) != null) {
 						final Arena ar = Arena.getNameArena(Main.nonactivearenas.get(used));
-						if (ar.getState() == GameState.WAITING || ar.getState() == GameState.LOBBY_START) {
-							final int pls = ar.getPlAmount(null);
-							loot[i] = new ItemBuilder(Material.YELLOW_CONCRETE_POWDER).name("§e" + Main.nonactivearenas.get(used))
-								.lore("").lore("§6Игроки: " + (pls < ar.getMin() ? pls + " из " + ar.getMin() : pls + " из " + ar.getMax())).build();
-						} else {
-							loot[i] = new ItemBuilder(Material.RED_CONCRETE_POWDER).name("§c" + Main.nonactivearenas.get(used))
-								.lore(Arrays.asList("", "§4Идет Игра", "", "§7Нажмите для наблюдения!")).build();
+						switch (ar.getState()) {
+							case WAITING, BEGINING:
+								final int pls = ar.getPlAmount(null);
+								loot[i] = new ItemBuilder(Material.YELLOW_CONCRETE_POWDER).name("§e" + Main.nonactivearenas.get(used))
+									.lore("").lore("§6Игроки: " + (pls < ar.getMin() ? pls + " из " + ar.getMin() : pls + " из " + ar.getMax())).build();
+								break;
+							default:
+								loot[i] = new ItemBuilder(Material.RED_CONCRETE_POWDER).name("§c" + Main.nonactivearenas.get(used))
+									.lore(Arrays.asList("", "§4Идет Игра", "", "§7Нажмите для наблюдения!")).build();
+								break;
 						}
 					} else {
 						loot[i] = new ItemBuilder(Material.GREEN_CONCRETE_POWDER).name("§a" + Main.nonactivearenas.get(used))

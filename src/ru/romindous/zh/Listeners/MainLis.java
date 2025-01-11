@@ -1,5 +1,6 @@
 package ru.romindous.zh.Listeners;
 
+import java.util.Collection;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Sound;
@@ -14,7 +15,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import ru.komiss77.Ostrov;
@@ -29,11 +29,8 @@ import ru.komiss77.utils.EntityUtil;
 import ru.komiss77.utils.StringUtil;
 import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Game.Arena;
-import ru.romindous.zh.Game.GameState;
 import ru.romindous.zh.Main;
 import ru.romindous.zh.PlHunter;
-
-import java.util.Collection;
 
 public class MainLis implements Listener {
 	
@@ -56,7 +53,7 @@ public class MainLis implements Listener {
 			final Arena ar = ta == null ? Main.plug.createArena(wantArena) : ta;
 			if (ar == null) return;
 			switch (ar.getState()) {
-				case WAITING, LOBBY_START, BEGINING -> ar.addPl(p);
+				case WAITING, BEGINING -> ar.addPl(p);
 				case RUNNING -> ar.addSpec(p);
 				case END -> {}
 			}
@@ -79,16 +76,6 @@ public class MainLis implements Listener {
 				e.setCancelled(ar == null);
 				break;
 			}
-		}
-	}
-
-	@EventHandler
-	public void onOpen(InventoryOpenEvent e) {
-		final Player pl = (Player) e.getPlayer();
-		final Arena ar = Arena.getPlayerArena(pl);
-		if (ar != null && ar.getState() == GameState.RUNNING) {
-			e.setCancelled(!e.getPlayer().isOp());
-			e.getPlayer().closeInventory();
 		}
 	}
 	
@@ -176,7 +163,6 @@ public class MainLis implements Listener {
 				}
 				break;
 			case WAITING:
-			case LOBBY_START:
 			case BEGINING:
 			case END:
 				e.setCancelled(true);
@@ -202,7 +188,7 @@ public class MainLis implements Listener {
 		if (ar == null) {
 			final Component modMsg = TCUtil.form(Main.bfr('{', TCUtil.P + StringUtil.toSigFigs(
 				(double) ph.getStat(Stat.ZH_zklls) / (double) ph.getStat(Stat.ZH_pdths), (byte) 2), '}')
-				+ ChatLst.NIK_COLOR + p.getName() + Main.afr('[', TCUtil.A + "ЛОББИ", ']') + " §7§o≫ " + TCUtil.N + msg);
+				+ ChatLst.NIK_COLOR + p.getName() + Main.afr('[', TCUtil.A + "ЛОББИ", ']') + " <gray><i>≫</i> " + TCUtil.N + msg);
 			for (final Audience au : e.viewers()) {
 				au.sendMessage(modMsg);
 			}
@@ -211,10 +197,9 @@ public class MainLis implements Listener {
 			e.sendProxy(false);
 			final Component modMsg;
 			switch (ar.getState()) {
-			case LOBBY_START:
 			case WAITING:
 				modMsg = TCUtil.form(ChatLst.NIK_COLOR + p.getName()
-					+ Main.afr('[', TCUtil.P + ar.getName(), ']') + " §7§o≫ " + TCUtil.N + msg);
+					+ Main.afr('[', TCUtil.P + ar.getName(), ']') + " <gray><i>≫</i> " + TCUtil.N + msg);
 				for (final Audience au : e.viewers()) {
 					au.sendMessage(modMsg);
 				}
@@ -225,7 +210,7 @@ public class MainLis implements Listener {
 			case END:
 				if (msg.length() > 1 && msg.charAt(0) == '!') {
 					modMsg = TCUtil.form(TCUtil.N + "[Всем] " + (ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
-						p.getName() + " §7§o≫ " + TCUtil.N + msg.substring(1));
+						p.getName() + " <gray><i>≫</i> " + TCUtil.N + msg.substring(1));
 					for (final PlHunter ors : ar.getPls()) {
 						final Player pl = ors.getPlayer();
 						pl.sendMessage(modMsg);
@@ -238,7 +223,7 @@ public class MainLis implements Listener {
 					}
 				} else {
 					modMsg = TCUtil.form((ph.zombie() ? Arena.ZOMB_CLR : Arena.SURV_CLR) +
-						p.getName() + " §7§o≫ " + TCUtil.N + msg);
+						p.getName() + " <gray><i>≫</i> " + TCUtil.N + msg);
 					for (final PlHunter ors : ar.getPls()) {
 						if (ors.zombie() == ph.zombie()) {
 							final Player pl = ors.getPlayer();
