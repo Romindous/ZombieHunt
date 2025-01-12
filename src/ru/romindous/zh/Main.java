@@ -15,9 +15,9 @@ import org.bukkit.potion.PotionEffect;
 import ru.komiss77.enums.Game;
 import ru.komiss77.enums.Stat;
 import ru.komiss77.modules.games.GM;
+import ru.komiss77.modules.items.ItemBuilder;
 import ru.komiss77.modules.player.PM;
 import ru.komiss77.modules.world.WXYZ;
-import ru.komiss77.utils.ItemBuilder;
 import ru.komiss77.utils.StringUtil;
 import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Commands.KitsCmd;
@@ -32,13 +32,13 @@ public class Main extends JavaPlugin{
 
 	public static String PRFX;
 	public static Main plug;
-//	public static YamlConfiguration config;
+	//	public static YamlConfiguration config;
 	public static WXYZ lobby;
 	public static final HashMap<String, Arena> activearenas = new HashMap<>();
 	public static final ArrayList<String> nonactivearenas = new ArrayList<>();
-	
-	
-    public void onEnable() {
+
+
+	public void onEnable() {
 		//Ostrov things
 		PM.setOplayerFun(p -> new PlHunter(p), true);
 		TCUtil.N = "§7";
@@ -58,15 +58,15 @@ public class Main extends JavaPlugin{
 			w.setGameRule(GameRule.KEEP_INVENTORY, true);
 			w.setGameRule(GameRule.NATURAL_REGENERATION, false);
 		}
-		
+
 		//конфиг
 		loadConfigs();
 	}
-	
+
 	public void onDisable() {
 
 		getServer().getConsoleSender().sendMessage("§4ZombieHunt is disabled...");
-		
+
 	}
 
 	public void loadConfigs() {
@@ -79,15 +79,15 @@ public class Main extends JavaPlugin{
 	    		getConfig().save(file);
 	        }
 	        config = (YamlConfiguration) getConfig();*/
-	        nonactivearenas.clear();
-	        //арены
-	        final File file = new File(getDataFolder() + File.separator + "arenas.yml");
-	        file.createNewFile();
-	        YamlConfiguration ars = YamlConfiguration.loadConfiguration(file);
-	        if (!ars.contains("arenas")) {
-	        	ars.createSection("arenas");
-		        ars.save(file);
-	        } else {
+			nonactivearenas.clear();
+			//арены
+			final File file = new File(getDataFolder() + File.separator + "arenas.yml");
+			file.createNewFile();
+			YamlConfiguration ars = YamlConfiguration.loadConfiguration(file);
+			if (!ars.contains("arenas")) {
+				ars.createSection("arenas");
+				ars.save(file);
+			} else {
 				for(final String s : ars.getConfigurationSection("arenas").getKeys(false)) {
 					if (ars.contains("arenas." + s + ".fin")) {
 						nonactivearenas.add(s);
@@ -95,28 +95,28 @@ public class Main extends JavaPlugin{
 					}
 				}
 			}
-	        if (ars.contains("lobby")) {
-	        	lobby = new WXYZ(getServer().getWorld(ars.getString("lobby.world")), ars.getInt("lobby.x"), ars.getInt("lobby.y"), ars.getInt("lobby.z"));
-	        }
-        }
-        catch (IOException | NullPointerException ex) {
-        	ex.printStackTrace();
-        }
+			if (ars.contains("lobby")) {
+				lobby = new WXYZ(getServer().getWorld(ars.getString("lobby.world")), ars.getInt("lobby.x"), ars.getInt("lobby.y"), ars.getInt("lobby.z"));
+			}
+		}
+		catch (IOException | NullPointerException ex) {
+			ex.printStackTrace();
+		}
 	}
-	
+
 	public Arena createArena(final String name) {
 		YamlConfiguration ars = YamlConfiguration.loadConfiguration(new File(getDataFolder() + File.separator + "arenas.yml"));
 		byte num = (byte) ars.getString("arenas." + name + ".spawns.x").split(":").length;
 		Location[] spawns = new Location[num];
 		for (byte i = 0; i < num; i++) {
-			spawns[i] = new Location(getServer().getWorld(ars.getString("arenas." + name + ".world")), 
-					Integer.parseInt(ars.getString("arenas." + name + ".spawns.x").split(":")[i]), 
-					Integer.parseInt(ars.getString("arenas." + name + ".spawns.y").split(":")[i]), 
-					Integer.parseInt(ars.getString("arenas." + name + ".spawns.z").split(":")[i]));
+			spawns[i] = new Location(getServer().getWorld(ars.getString("arenas." + name + ".world")),
+				Integer.parseInt(ars.getString("arenas." + name + ".spawns.x").split(":")[i]),
+				Integer.parseInt(ars.getString("arenas." + name + ".spawns.y").split(":")[i]),
+				Integer.parseInt(ars.getString("arenas." + name + ".spawns.z").split(":")[i]));
 		}
 		return new Arena(name, ars.getInt("arenas." + name + ".min"), ars.getInt("arenas." + name + ".max"), spawns);
 	}
-	
+
 	public static void lobbyPlayer(final Player p, final PlHunter ph) {
 		ph.kills0();
 		ph.arena(null);
@@ -127,13 +127,13 @@ public class Main extends JavaPlugin{
 		p.getInventory().setItem(0, new ItemBuilder(ItemType.FERMENTED_SPIDER_EYE).name("§6Выбор Карты").build());
 		p.getInventory().setItem(4, new ItemBuilder(ItemType.TURTLE_HELMET).name("§eНаборы для Игры").build());
 		p.getInventory().setItem(8, new ItemBuilder(ItemType.MAGMA_CREAM).name("§4Выход в Лобби").build());
-		p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20);
+		p.getAttribute(Attribute.MAX_HEALTH).setBaseValue(20);
 		p.setExp(0);
 		p.setLevel(0);
 		p.setFoodLevel(20);
 		p.setHealth(20);
 		for (PotionEffect ef : p.getActivePotionEffects()) {
-	        p.removePotionEffect(ef.getType());
+			p.removePotionEffect(ef.getType());
 		}
 		final String prm = ph.getTopPerm();
 		ph.taq(bfr('[', TCUtil.A + "ЛОББИ", ']'),
@@ -159,7 +159,7 @@ public class Main extends JavaPlugin{
 		final Component c = TCUtil.form(TCUtil.N + "Сейчас в игре: " + TCUtil.P + i + TCUtil.N + " человек!");
 		for (final Player pl : Bukkit.getOnlinePlayers()) pl.sendPlayerListFooter(c);
 	}
-	
+
 	public static void updateScore(final PlHunter ph) {
 		ph.score.getSideBar().reset().title(Main.PRFX)
 			.add(" ")
@@ -176,9 +176,9 @@ public class Main extends JavaPlugin{
 			.add(" ")
 			.add("§e    ostrov77.ru").build();
 	}
-	
+
 	public static void endArena(final Arena ar) {
-		GM.sendArenaData(Game.ZH, ar.getName(), ru.komiss77.enums.GameState.ОЖИДАНИЕ, 0, 
+		GM.sendArenaData(Game.ZH, ar.getName(), ru.komiss77.enums.GameState.ОЖИДАНИЕ, 0,
 			"§7[§6Инфекция§7]", "§2Ожидание", " ", "§7Игроков: §20§7/§2" + ar.getMin());
 		activearenas.remove(ar.getName());
 		for (final PlHunter plh : ar.getSpcs()) {

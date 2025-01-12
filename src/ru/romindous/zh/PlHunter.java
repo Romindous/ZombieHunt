@@ -41,7 +41,7 @@ public class PlHunter extends Oplayer {
         score.getSideBar().update(Arena.SKIT, Arena.SURV_CLR + "Игрока: " + TCUtil.P + kit);
     }
     public String survKit() {
-        final String def = KitsCmd.firstOf("kits.player");
+        final String def = KitsCmd.firstOf("player");
         final String data = mysqlData.get(Arena.SKIT);
         return data == null || data.isEmpty() ? def : data;
     }
@@ -51,7 +51,7 @@ public class PlHunter extends Oplayer {
         score.getSideBar().update(Arena.ZKIT, Arena.ZOMB_CLR + "Зомби: " + TCUtil.P + kit);
     }
     public String zombKit() {
-        final String def = KitsCmd.firstOf("kits.zombie");
+        final String def = KitsCmd.firstOf("zombie");
         final String data = mysqlData.get(Arena.ZKIT);
         return data == null || data.isEmpty() ? def : data;
     }

@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import ru.komiss77.modules.world.WXYZ;
@@ -201,8 +202,8 @@ public class ZHCmd implements CommandExecutor, TabCompleter{
 			}
 			
 			//общие комманды
-			YamlConfiguration kits = YamlConfiguration.loadConfiguration(new File(plug.getDataFolder() + File.separator + "kits.yml"));
-			if (ars.contains("lobby") && kits.getConfigurationSection("kits").getConfigurationSection("zombie").getKeys(false).size() > 0 && kits.getConfigurationSection("kits").getConfigurationSection("player").getKeys(false).size() > 0) {
+			final YamlConfiguration kits = YamlConfiguration.loadConfiguration(new File(plug.getDataFolder() + File.separator + "kits.yml"));
+			if (ars.contains("lobby") && checkKeys(kits, "zombie") && checkKeys(kits, "player")) {
 				//добавление на карту
 				if (args.length == 2 && args[0].equalsIgnoreCase("join")) {
 					if (Arena.getPlayerArena(p) == null) {
@@ -298,6 +299,15 @@ public class ZHCmd implements CommandExecutor, TabCompleter{
 			}
 		}
 		return true;
+	}
+
+	private boolean checkKeys(final YamlConfiguration cfg, final String... path) {
+		ConfigurationSection cs = cfg;
+		for (final String p : path) {
+			cs = cs.getConfigurationSection(p);
+			if (cs == null) return false;
+		}
+		return !cs.getKeys(false).isEmpty();
 	}
 
 	//арена на которой больше всего игроков

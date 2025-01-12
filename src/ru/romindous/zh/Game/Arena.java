@@ -1,5 +1,7 @@
 package ru.romindous.zh.Game;
 
+import java.util.Collection;
+import java.util.HashMap;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
@@ -7,7 +9,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.potion.PotionEffect;
@@ -19,14 +21,12 @@ import ru.komiss77.Ostrov;
 import ru.komiss77.enums.Game;
 import ru.komiss77.enums.Stat;
 import ru.komiss77.modules.games.GM;
+import ru.komiss77.modules.items.ItemBuilder;
 import ru.komiss77.modules.player.PM;
 import ru.komiss77.utils.*;
 import ru.romindous.zh.Commands.KitsCmd;
 import ru.romindous.zh.Main;
 import ru.romindous.zh.PlHunter;
-
-import java.util.Collection;
-import java.util.HashMap;
 
 public class Arena {
 
@@ -111,7 +111,7 @@ public class Arena {
 
 		switch (getState()) {
 		case WAITING:
-			GM.sendArenaData(Game.ZH, this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, pls.size(), TCUtil.N + "[§6Инфекция§7]", 
+			GM.sendArenaData(Game.ZH, this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, pls.size(), TCUtil.N + "[§6Инфекция§7]",
 				"§2Ожидание", " ", TCUtil.N + "Игроков: §2" + pls.size() + TCUtil.N + "/§2" + min);
 			p.sendMessage(Main.PRFX + TCUtil.N + "Ты больше не на карте " + TCUtil.A + getName());
 			for (final PlHunter plh : pls.values()) {
@@ -242,8 +242,8 @@ public class Arena {
 				}
 			}
 			p.getInventory().clear();
-			p.getInventory().setItem(2, new ItemBuilder(Material.GOLDEN_HELMET).name("§eВыбор Набора").build());
-			p.getInventory().setItem(6, new ItemBuilder(Material.SLIME_BALL).name("§cВыход").build());
+			p.getInventory().setItem(2, new ItemBuilder(ItemType.GOLDEN_HELMET).name("§eВыбор Набора").build());
+			p.getInventory().setItem(6, new ItemBuilder(ItemType.SLIME_BALL).name("§cВыход").build());
 			if (pls.size() < min) {
 				GM.sendArenaData(Game.ZH, this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, pls.size(), TCUtil.N + "[§6Инфекция§7]", 
 					"§2Ожидание", " ", TCUtil.N + "Игроков: §2" + pls.size() + TCUtil.N + "/§2" + min);
@@ -389,8 +389,8 @@ public class Arena {
 						final Player pl = plh.getPlayer();
 						pl.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 100, 1));
 						final PlayerInventory inv = pl.getInventory();
-						if (inv.contains(Material.BOW) || inv.getItemInOffHand().getType() == Material.BOW) {
-							inv.addItem(new ItemStack(Material.ARROW, 2));
+						if (inv.contains(Material.BOW) || ItemUtil.is(inv.getItemInOffHand(), ItemType.BOW)) {
+							inv.addItem(ItemType.ARROW.createItemStack(2));
 						}
 					}
 				}
@@ -557,19 +557,19 @@ public class Arena {
 	
 	public void giveKit(final Player p, final PlHunter ph) {
 		final PlayerInventory inv = p.getInventory();
-		final String pth = ph.zombie() ? "kits.zombie." + ph.zombKit() : "kits.player." + ph.survKit();
+		final String pth = ph.zombie() ? "zombie." + ph.zombKit() : "player." + ph.survKit();
 		final ConfigurationSection cs = KitsCmd.kits.getConfigurationSection(pth);
 		inv.clear();
-		inv.setHelmet(KitsCmd.getItemStack(pth + ".helm"));
-		inv.setChestplate(KitsCmd.getItemStack(pth + ".chest"));
-		inv.setLeggings(KitsCmd.getItemStack(pth + ".leggs"));
-		inv.setBoots(KitsCmd.getItemStack(pth + ".boots"));
+		inv.setHelmet(ItemUtil.parse(cs.getString("helm")));
+		inv.setChestplate(ItemUtil.parse(cs.getString("chest")));
+		inv.setLeggings(ItemUtil.parse(cs.getString("leggs")));
+		inv.setBoots(ItemUtil.parse(cs.getString("boots")));
 		for (int i = 0; cs.contains(String.valueOf(i)); i++) {
-			inv.setItem(i, KitsCmd.getItemStack(pth + "." + i));
+			inv.setItem(i, ItemUtil.parse(cs.getString("" + i)));
 		}
 		p.closeInventory();
 		final int hp = cs.getInt("hp");
-		p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(hp);
+		p.getAttribute(Attribute.MAX_HEALTH).setBaseValue(hp);
 		p.setHealth(hp);
 	}
 	

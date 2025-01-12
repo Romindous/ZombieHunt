@@ -1,7 +1,9 @@
 package ru.romindous.zh.Listeners;
 
+import net.kyori.adventure.key.Key;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.BlockType;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -14,12 +16,13 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.ItemType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import ru.komiss77.ApiOstrov;
 import ru.komiss77.Ostrov;
+import ru.komiss77.modules.items.ItemBuilder;
 import ru.komiss77.modules.player.PM;
-import ru.komiss77.utils.ItemBuilder;
 import ru.komiss77.utils.ItemUtil;
 import ru.komiss77.utils.ScreenUtil;
 import ru.komiss77.utils.TCUtil;
@@ -61,7 +64,7 @@ public class InterractLis implements Listener{
 		final Arena ar = ph.arena();
 		switch (e.getAction()) {
 		case PHYSICAL:
-			e.setCancelled(e.getClickedBlock().getType() == Material.FARMLAND);
+			e.setCancelled(BlockType.FARMLAND.equals(e.getClickedBlock().getType().asBlockType()));
 			break;
 		case RIGHT_CLICK_AIR:
 			if (ItemUtil.isBlank(it, false)) {
@@ -126,10 +129,10 @@ public class InterractLis implements Listener{
 					p.playSound(p.getLocation(), Sound.BLOCK_BEEHIVE_EXIT, 80, 1);
 					p.performCommand("zkits choose");
 				} else if (inm.contains("Выход")) {
-					if (it.getType() == Material.SLIME_BALL) {
+					if (ItemUtil.is(it, ItemType.SLIME_BALL)) {
 						e.setCancelled(true);
 						p.performCommand("zh leave");
-					} else if (it.getType() == Material.MAGMA_CREAM) {
+					} else if (ItemUtil.is(it, ItemType.MAGMA_CREAM)) {
 						e.setCancelled(true);
 						ApiOstrov.sendToServer(p, "lobby1", "");
 					}
@@ -192,10 +195,10 @@ public class InterractLis implements Listener{
 					p.playSound(p.getLocation(), Sound.BLOCK_BEEHIVE_EXIT, 80, 1);
 					p.performCommand("zkits choose");
 				} else if (inm.contains("Выход")) {
-					if (it.getType() == Material.SLIME_BALL) {
+					if (ItemUtil.is(it, ItemType.SLIME_BALL)) {
 						e.setCancelled(true);
 						p.performCommand("zh leave");
-					} else if (it.getType() == Material.MAGMA_CREAM) {
+					} else if (ItemUtil.is(it, ItemType.MAGMA_CREAM)) {
 						e.setCancelled(true);
 						ApiOstrov.sendToServer(p, "lobby1", "");
 					}
@@ -224,30 +227,30 @@ public class InterractLis implements Listener{
 			case 6:
 			case 7:
 			case 8:
-				loot[i] = new ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS_PANE).name("§8-=-=-=-=-").build();
+				loot[i] = new ItemBuilder(ItemType.LIGHT_GRAY_STAINED_GLASS_PANE).name("§8-=-=-=-=-").build();
 				break;
 			case 4:
-				loot[i] = new ItemBuilder(Material.LEATHER).name("§6Выбор Карты").build();
+				loot[i] = new ItemBuilder(ItemType.LEATHER).name("§6Выбор Карты").build();
 				break;
 			default:
 				if (i > (slots - 10)) {
-					loot[i] = new ItemBuilder(Material.LIGHT_GRAY_STAINED_GLASS_PANE).name("§8-=-=-=-=-").build();
+					loot[i] = new ItemBuilder(ItemType.LIGHT_GRAY_STAINED_GLASS_PANE).name("§8-=-=-=-=-").build();
 				} else if (used < Main.nonactivearenas.size()) {
 					if (Arena.getNameArena(Main.nonactivearenas.get(used)) != null) {
 						final Arena ar = Arena.getNameArena(Main.nonactivearenas.get(used));
 						switch (ar.getState()) {
 							case WAITING, BEGINING:
 								final int pls = ar.getPlAmount(null);
-								loot[i] = new ItemBuilder(Material.YELLOW_CONCRETE_POWDER).name("§e" + Main.nonactivearenas.get(used))
+								loot[i] = new ItemBuilder(ItemType.YELLOW_CONCRETE_POWDER).name("§e" + Main.nonactivearenas.get(used))
 									.lore("").lore("§6Игроки: " + (pls < ar.getMin() ? pls + " из " + ar.getMin() : pls + " из " + ar.getMax())).build();
 								break;
 							default:
-								loot[i] = new ItemBuilder(Material.RED_CONCRETE_POWDER).name("§c" + Main.nonactivearenas.get(used))
+								loot[i] = new ItemBuilder(ItemType.RED_CONCRETE_POWDER).name("§c" + Main.nonactivearenas.get(used))
 									.lore(Arrays.asList("", "§4Идет Игра", "", "§7Нажмите для наблюдения!")).build();
 								break;
 						}
 					} else {
-						loot[i] = new ItemBuilder(Material.GREEN_CONCRETE_POWDER).name("§a" + Main.nonactivearenas.get(used))
+						loot[i] = new ItemBuilder(ItemType.GREEN_CONCRETE_POWDER).name("§a" + Main.nonactivearenas.get(used))
 							.lore("").lore("§2Ожидание (§7" + arenas.getInt("arenas." + Main.nonactivearenas.get(used) + ".min") + "§2)").build();
 					}
 					used++;
@@ -260,8 +263,8 @@ public class InterractLis implements Listener{
 
 	public void crtEnt(final Location loc, final EntityType et, final byte hlth, final float spd, final short tm, final String nm) {
 		final LivingEntity le = (LivingEntity) loc.getWorld().spawnEntity(loc, et);
-		le.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(spd);
-		le.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(hlth);
+		le.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(spd);
+		le.getAttribute(Attribute.MAX_HEALTH).setBaseValue(hlth);
 		le.setHealth(hlth);
 		le.customName(TCUtil.form(nm));
 		le.setCustomNameVisible(false);
@@ -269,7 +272,8 @@ public class InterractLis implements Listener{
 		Arrays.fill(le.getEquipment().getArmorContents(), null);
 		le.getEquipment().setItemInMainHand(null);
 		le.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 1000000, 1, true, false));
-		loc.getWorld().playSound(loc, Sound.valueOf("ENTITY_" + et.toString() + "_HURT"), 0.5f, 0.8f);
+		final Sound snd = Ostrov.registries.SOUNDS.get(Key.key("entity." + et.toString().toLowerCase() + ".hurt"));
+		if (snd != null) loc.getWorld().playSound(loc, snd, 0.5f, 0.8f);
 		Ostrov.sync(() -> le.remove(), tm);
 	}
 }
