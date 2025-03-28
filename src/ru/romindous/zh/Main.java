@@ -64,9 +64,7 @@ public class Main extends JavaPlugin{
 	}
 
 	public void onDisable() {
-
 		getServer().getConsoleSender().sendMessage("§4ZombieHunt is disabled...");
-
 	}
 
 	public void loadConfigs() {
