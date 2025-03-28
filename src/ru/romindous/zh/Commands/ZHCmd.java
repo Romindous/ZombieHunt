@@ -1,5 +1,10 @@
 package ru.romindous.zh.Commands;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -7,16 +12,10 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import ru.komiss77.modules.world.WXYZ;
+import ru.komiss77.modules.world.BVec;
 import ru.romindous.zh.Game.Arena;
 import ru.romindous.zh.Game.GameState;
 import ru.romindous.zh.Main;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 
 public class ZHCmd implements CommandExecutor, TabCompleter{
 
@@ -170,7 +169,7 @@ public class ZHCmd implements CommandExecutor, TabCompleter{
 					//установка лобби
 				} else if (args.length == 1) {
 					if (args[0].equalsIgnoreCase("setlobby")) {
-						Main.lobby = new WXYZ(p.getLocation());
+						Main.lobby = BVec.of(p.getLocation());
 						ars.set("lobby.world", p.getWorld().getName());
 						ars.set("lobby.x", p.getLocation().getBlockX());
 						ars.set("lobby.y", p.getLocation().getBlockY());

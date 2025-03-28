@@ -136,7 +136,7 @@ public class Arena {
 				for (final PlHunter plh : pls.values()) {
 					final Player pl = plh.getPlayer();
 					pl.sendMessage(Main.PRFX + "На карте недостаточно игроков для начала!");
-					pl.teleport(Main.lobby.getCenterLoc());
+					pl.teleport(Main.lobby());
 					waitScore(plh);
 				}
 				GM.sendArenaData(Game.ZH, this.name, ru.komiss77.enums.GameState.ОЖИДАНИЕ, pls.size(), TCUtil.N + "[§6Инфекция§7]", "§2Ожидание", " ", TCUtil.N + "Игроков: §2" + pls.size() + TCUtil.N + "/§2" + min);

@@ -2,9 +2,9 @@ package ru.romindous.zh.Listeners;
 
 import java.util.Collection;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Sound;
-import org.bukkit.entity.Damageable;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -18,6 +18,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import ru.komiss77.Ostrov;
+import ru.komiss77.boot.OStrap;
 import ru.komiss77.enums.Data;
 import ru.komiss77.enums.Stat;
 import ru.komiss77.events.ChatPrepareEvent;
@@ -95,7 +96,7 @@ public class MainLis implements Listener {
 	@EventHandler
 	public void onDeath(PlayerRespawnEvent e) {
 		if (Main.lobby != null) {
-			e.setRespawnLocation(Main.lobby.getCenterLoc());
+			e.setRespawnLocation(Main.lobby());
 		}
 	}
 	
@@ -168,11 +169,11 @@ public class MainLis implements Listener {
 				e.setCancelled(true);
 				break;
 			}
-		} else if (e.getEntity() instanceof LivingEntity && ((Damageable) e.getEntity()).getHealth() - e.getFinalDamage() < 0.1) {
-			e.getEntity().getWorld().playSound(e.getEntity().getLocation(),
-				Sound.valueOf("ENTITY_" + e.getEntityType().toString() + "_DEATH"), 0.25f, 1);
+		} else if (e.getEntity() instanceof final LivingEntity le && le.getHealth() - e.getFinalDamage() < 0.1) {
+			le.getWorld().playSound(le.getLocation(), OStrap.get(Key.key("entity_" + le.getType().key().value() + "_death"),
+				Sound.INTENTIONALLY_EMPTY), 0.25f, 1);
 			e.setCancelled(true);
-			e.getEntity().remove();
+			le.remove();
 		}
 	}
 

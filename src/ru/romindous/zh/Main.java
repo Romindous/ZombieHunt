@@ -17,7 +17,7 @@ import ru.komiss77.enums.Stat;
 import ru.komiss77.modules.games.GM;
 import ru.komiss77.modules.items.ItemBuilder;
 import ru.komiss77.modules.player.PM;
-import ru.komiss77.modules.world.WXYZ;
+import ru.komiss77.modules.world.BVec;
 import ru.komiss77.utils.StringUtil;
 import ru.komiss77.utils.TCUtil;
 import ru.romindous.zh.Commands.KitsCmd;
@@ -33,7 +33,7 @@ public class Main extends JavaPlugin{
 	public static String PRFX;
 	public static Main plug;
 	//	public static YamlConfiguration config;
-	public static WXYZ lobby;
+	public static BVec lobby;
 	public static final HashMap<String, Arena> activearenas = new HashMap<>();
 	public static final ArrayList<String> nonactivearenas = new ArrayList<>();
 
@@ -93,8 +93,12 @@ public class Main extends JavaPlugin{
 					}
 				}
 			}
+
 			if (ars.contains("lobby")) {
-				lobby = new WXYZ(getServer().getWorld(ars.getString("lobby.world")), ars.getInt("lobby.x"), ars.getInt("lobby.y"), ars.getInt("lobby.z"));
+				final BVec lb = BVec.of(ars.getInt("lobby.x"),
+					ars.getInt("lobby.y"), ars.getInt("lobby.z"));
+				final World tw = getServer().getWorld(ars.getString("lobby.world"));
+				lobby = lb.w(tw == null ? Bukkit.getWorlds().getFirst() : tw);
 			}
 		}
 		catch (IOException | NullPointerException ex) {
@@ -136,7 +140,7 @@ public class Main extends JavaPlugin{
 		final String prm = ph.getTopPerm();
 		ph.taq(bfr('[', TCUtil.A + "ЛОББИ", ']'),
 			TCUtil.P, (prm.isEmpty() ? "" : afr('(', "§e" + prm, ')')));
-		if (lobby != null) p.teleport(lobby.getCenterLoc());
+		if (lobby != null) p.teleport(lobby());
 		updateScore(ph);
 		inGameCnt();
 		for (final Player op : Bukkit.getOnlinePlayers()) {
@@ -149,6 +153,11 @@ public class Main extends JavaPlugin{
 				op.hidePlayer(plug, p);
 			}
 		}
+	}
+
+	public static Location lobby() {
+		final World w = lobby.w();
+		return lobby.center(w == null ? Bukkit.getWorlds().getFirst() : w);
 	}
 
 	public static void inGameCnt() {
